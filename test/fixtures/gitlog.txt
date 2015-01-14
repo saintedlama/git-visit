@@ -1,0 +1,597 @@
+commit a968331c378a91e322321fc5ffd38a9d32e9c8cc
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Jun 3 08:46:52 2014 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Jun 3 08:46:52 2014 +0200
+
+    Add coveralls badge
+
+M	README.md
+
+commit e43ac7c25dcd788d2edbd5bdcce44eb0e6790a7c
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Jun 3 08:45:20 2014 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Jun 3 08:45:20 2014 +0200
+
+    Use debug module for writing debug messages and makes logError obsolete
+
+M	README.md
+M	lib/strategies/array.js
+M	lib/strategies/collection.js
+M	package.json
+
+commit f809dbe33b983848a2c1f0a1c29a56396ae75f3b
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Jun 3 08:30:55 2014 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Jun 3 08:30:55 2014 +0200
+
+    Extract functionality to set schema options to own module
+
+A	lib/set-schema-options.js
+M	lib/strategies/array.js
+M	lib/strategies/collection.js
+A	test/set-schema-options.js
+
+commit 7b4cb5756e1490fea4e588076df66d4e641bc044
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Jun 3 08:26:27 2014 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Jun 3 08:26:27 2014 +0200
+
+    Uses mongoose toObject instead of custom field copy mechanism
+
+M	lib/strategies/array.js
+
+commit 47dd0c93889677978e287467490d72f5f4658ae7
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Jun 3 08:25:50 2014 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Jun 3 08:25:50 2014 +0200
+
+    Pulls turning off unique indices to clone-schema
+
+M	lib/clone-schema.js
+M	lib/strategies/collection.js
+
+commit 0b27b56567f1193c093985f2bafb09d786f68e78
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Jun 3 07:56:12 2014 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Jun 3 07:56:12 2014 +0200
+
+    Removes comment
+
+M	lib/clone-schema.js
+
+commit 1d0a7b9de47c0e9f5a8c2c6a6005bca738a1154d
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Jun 3 07:54:17 2014 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Jun 3 07:54:17 2014 +0200
+
+    Adds tests for issue #10
+
+M	test/issues.js
+
+commit 683154f7e3709d335df877412bee9a8a6e1f1887
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Jun 3 07:40:51 2014 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Jun 3 07:40:51 2014 +0200
+
+    Adjust code style
+
+M	lib/strategies/collection.js
+
+commit b04f7fa595dff3e926368945843a44a0867ca2b0
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Jun 3 07:40:41 2014 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Jun 3 07:40:41 2014 +0200
+
+    Updates dependencies
+
+M	package.json
+
+commit 7f4144effd77cb221a8ee3de617eb655f7c8b5ef
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Jun 3 07:32:06 2014 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Jun 3 07:32:06 2014 +0200
+
+    Removes owl-deepcopy in favor of a custom path only schema clone implementation
+
+M	lib/clone-schema.js
+M	package.json
+A	test/clone-schema.js
+
+commit b48253c77bdc2789c16226c0337b858845ae83a2
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Jun 3 06:49:08 2014 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Jun 3 06:49:08 2014 +0200
+
+    Adds coverage and working test scripts
+
+M	package.json
+
+commit 5b7bd04d9113f5694d38f30146daba845dc263ef
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Jun 3 06:48:40 2014 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Jun 3 06:48:40 2014 +0200
+
+    Adds coveralls support and removes 0.6 tests
+
+M	.travis.yml
+
+commit 5682ffd2785ef29d221eecb80b2e1e61aa2bacf4
+Author:     Tiago Relvao <tiago@electrichummingbird.com>
+AuthorDate: Mon Jun 2 12:42:55 2014 +0100
+Commit:     Tiago Relvao <tiago@electrichummingbird.com>
+CommitDate: Mon Jun 2 12:42:55 2014 +0100
+
+    when cloning a user schema unique indexes should be ignored.
+
+M	lib/clone-schema.js
+M	test/issues.js
+
+commit e23a513df461986cb59911468a13def9620cb7ac
+Author:     Ben Taylor <ben@bentaylor.co.uk>
+AuthorDate: Fri May 16 13:50:25 2014 +0100
+Commit:     Ben Taylor <ben@bentaylor.co.uk>
+CommitDate: Fri May 16 13:50:25 2014 +0100
+
+    refVersion is out of sync by 1 for each version. This happens becuase the origin documents version number is not incremented untill after the mongose pre save hook is run.
+    Incrementing the versionCopy's refVersion (if not zero) mimics the behavour and caused the version number to correctly sync up.
+
+M	lib/strategies/array.js
+
+commit 601a908327bafd9fb568402ac24573a36fe90c66
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Sat Feb 22 08:58:25 2014 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Sat Feb 22 08:58:25 2014 +0100
+
+    Fixes title and removes unmaintained changelog
+
+M	README.md
+
+commit 685085254b2d87e3ba9b36178cff3ffd7e3f34d2
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Fri Feb 21 16:38:08 2014 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Fri Feb 21 16:38:08 2014 +0100
+
+    Adds travis,yml to npm ignores
+
+M	.npmignore
+
+commit 1c691252f0d55c8be8544e560fa6ca41afa4ee38
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Fri Feb 21 16:36:02 2014 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Fri Feb 21 16:36:02 2014 +0100
+
+    Bumps version
+
+M	package.json
+
+commit 765f20dea1681d2c9fd749f508d98e66718787eb
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Fri Feb 21 16:35:02 2014 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Fri Feb 21 16:35:02 2014 +0100
+
+    Updates mongoose and mocha dependencies
+
+M	package.json
+
+commit 260d46c54956ff82b14b431c7e4d7595f632ea43
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Fri Feb 21 16:34:42 2014 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Fri Feb 21 16:34:42 2014 +0100
+
+    Adds option to exclude a field from triggering a new version (fixes #8)
+
+M	README.md
+M	lib/strategies/array.js
+M	lib/version.js
+M	test/issues.js
+
+commit f03147cd620d016859b02d3f8e1948db3348bdce
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Fri Feb 21 15:57:48 2014 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Fri Feb 21 15:57:48 2014 +0100
+
+    Adds option to remove versions when origin document is removed
+
+M	README.md
+M	lib/strategies/array.js
+M	lib/strategies/collection.js
+M	lib/version.js
+M	test/issues.js
+
+commit 36e1366af358702ba1379d55a5923f55b71beeb7
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Fri Feb 21 15:35:45 2014 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Fri Feb 21 15:35:45 2014 +0100
+
+    Refactors tests by extracting mongodb test functionaly and switches to chai
+
+M	package.json
+M	test/issues.js
+A	test/mongotest.js
+M	test/version.js
+
+commit bbba9f1952cb6c39888d61c9ec9083bed894d937
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Fri Feb 21 15:34:48 2014 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Fri Feb 21 15:34:48 2014 +0100
+
+    Refactors code and sets _id to undefined again
+
+M	lib/strategies/array.js
+
+commit b94743f1d2e6462fdaac071919bae824a7a36c5e
+Author:     Brian Woodward <brian.woodward@gmail.com>
+AuthorDate: Mon Jan 13 11:32:38 2014 -0500
+Commit:     Brian Woodward <brian.woodward@gmail.com>
+CommitDate: Mon Jan 13 11:32:38 2014 -0500
+
+    Using delete to remove the versionedModel._id in the collection strategy
+
+M	lib/strategies/collection.js
+
+commit 767093fb607f5d87bb321644617dae4576d135d8
+Author:     Christoph Walcher <c.walcher@diamonddogs.cc>
+AuthorDate: Mon May 27 17:57:22 2013 +0200
+Commit:     Christoph Walcher <c.walcher@diamonddogs.cc>
+CommitDate: Mon May 27 17:57:22 2013 +0200
+
+    Upgrade mongoose version
+
+M	package.json
+
+commit eaa4b8fb3f152649ef8856fb42f4614f4c4bd73c
+Author:     Christoph Walcher <c.walcher@diamonddogs.cc>
+AuthorDate: Mon May 27 17:46:06 2013 +0200
+Commit:     Christoph Walcher <c.walcher@diamonddogs.cc>
+CommitDate: Mon May 27 17:46:06 2013 +0200
+
+    Add test for issue popped up in conjunction with text search plugin
+
+M	package.json
+A	test/fixtures/page.js
+A	test/issues.js
+M	test/version.js
+
+commit 37182e35deabd8b3e4a9b48e39f269a6cc59f8ab
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Wed May 15 07:36:48 2013 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Wed May 15 07:36:48 2013 +0200
+
+    Add travis build status image
+
+M	README.md
+
+commit 8720efd54f8bd64ea8a419bb647c4f6d60c5d1a2
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Wed May 15 07:23:36 2013 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Wed May 15 07:23:36 2013 +0200
+
+    Correct node.js versions
+
+M	.travis.yml
+
+commit 1e3f57d303d4425ffb3895bcf4b58975e4a9b3f1
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Wed May 15 07:21:05 2013 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Wed May 15 07:21:05 2013 +0200
+
+    Add node.js version 0.10 to travis build
+
+M	.travis.yml
+
+commit 326918e4d3ff3fcb0e0003bdaab8323cd2ad183e
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Wed May 15 07:18:44 2013 +0200
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Wed May 15 07:18:44 2013 +0200
+
+    Increment package version
+
+M	package.json
+
+commit 800599a83779d59ede179421b9b17da679a4264f
+Author:     Tim de Koning <github@king-management.nl>
+AuthorDate: Mon Feb 25 16:22:38 2013 +0100
+Commit:     Tim de Koning <github@king-management.nl>
+CommitDate: Mon Feb 25 16:22:38 2013 +0100
+
+    - Fixed issue #3 saintedlama/mongoose-version/issues/3
+
+M	lib/strategies/collection.js
+
+commit 94daffed68323bb79ce90a44123d8c754c4c33b0
+Author:     Tim de Koning <github@king-management.nl>
+AuthorDate: Tue Feb 19 17:21:34 2013 +0100
+Commit:     Tim de Koning <github@king-management.nl>
+CommitDate: Tue Feb 19 17:21:34 2013 +0100
+
+    - Added options to supply mongoose instance. (Support for e.g. https://npmjs.org/package/mongeese)
+    - Updated documentation
+
+M	README.md
+M	lib/strategies/array.js
+M	lib/strategies/collection.js
+M	lib/version.js
+
+commit 6d288d1d2da5e40bcc6b09e458d75b8a78cefef0
+Author:     Tim de Koning <github@king-management.nl>
+AuthorDate: Tue Feb 19 15:07:19 2013 +0100
+Commit:     Tim de Koning <github@king-management.nl>
+CommitDate: Tue Feb 19 15:07:19 2013 +0100
+
+    Switching to new deep-clone library
+    Fixing issue #1
+
+M	lib/clone-schema.js
+M	package.json
+
+commit 98da25be8475e59c2918239ca02d7f6e190c6747
+Author:     Tim de Koning <github@king-management.nl>
+AuthorDate: Tue Feb 19 11:21:58 2013 +0100
+Commit:     Tim de Koning <github@king-management.nl>
+CommitDate: Tue Feb 19 11:21:58 2013 +0100
+
+    mongoose-version is always depending on mongoose
+
+M	package.json
+
+commit 4233363ad0b162ac993944cc7c043abd041b348f
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Fri Feb 15 07:39:09 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Fri Feb 15 07:39:09 2013 +0100
+
+    Increment package version
+
+M	package.json
+
+commit 2c857126b66b49b3819c62039065a020ecc25d37
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Fri Feb 15 07:38:46 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Fri Feb 15 07:38:46 2013 +0100
+
+    Add modified and created date as well as the option to use a document property in version model
+
+M	lib/strategies/array.js
+M	test/version.js
+
+commit 85066e37e0ef04a8ba89ca2a59a98d98984c8014
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Mon Feb 11 19:21:39 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Mon Feb 11 19:21:39 2013 +0100
+
+    Increase package version and add changelog to readme
+
+M	README.md
+M	package.json
+
+commit 599bb43c7bbc8a5663b2a8b5072352f93be3070e
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Mon Feb 11 19:20:16 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Mon Feb 11 19:20:16 2013 +0100
+
+    Correct clone implementation problem
+
+M	lib/strategies/array.js
+
+commit 9cbd925d7b263cab6d22b7e87adbaaf1a656041b
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Mon Feb 11 19:06:53 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Mon Feb 11 19:06:53 2013 +0100
+
+    Add gitattributes to prevent CRLF
+
+A	.gitattributes
+
+commit 1fac66a5ae7cb4c2ad0ef80868c3d085c1a1e3ca
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Mon Feb 11 19:06:07 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Mon Feb 11 19:06:07 2013 +0100
+
+    Increment version number
+
+M	package.json
+
+commit 3cb5aff4f7c2b27238fbc65193043081d86ae0fe
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Mon Feb 11 19:05:53 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Mon Feb 11 19:05:53 2013 +0100
+
+    Reflects change defaults, corrects typo and adds a changelog section
+
+M	README.md
+
+commit e32ef3da23282f2592362b52d33649cda80064ff
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Mon Feb 11 19:04:52 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Mon Feb 11 19:04:52 2013 +0100
+
+    Correct typo
+
+M	lib/strategies/array.js
+M	lib/strategies/collection.js
+M	lib/version.js
+
+commit 4eff30f99db67c2b66b3d230f4d68fbe713394d5
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Mon Feb 11 18:54:02 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Mon Feb 11 18:54:02 2013 +0100
+
+    Make array the default version
+
+M	lib/version.js
+
+commit 2033db94822d17cd07e374ee32e68d477fa07e55
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Mon Feb 11 18:51:39 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Mon Feb 11 18:51:39 2013 +0100
+
+    Throws error for unknown strategies
+
+M	lib/version.js
+M	test/version.js
+
+commit 3a51484679e53ae0a89aed8e28fac22cb39e6566
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Feb 5 20:39:36 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Feb 5 20:39:36 2013 +0100
+
+    Add scripts section with test script
+
+M	package.json
+
+commit 9a8583d25f1467d4668d7ebfe12443ffff35baae
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Feb 5 20:37:46 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Feb 5 20:37:46 2013 +0100
+
+    Add mongodb as travis-ci required service
+
+M	.travis.yml
+
+commit b2cb6ea68c912539d70afaec746a965f61d3f3d4
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Tue Feb 5 20:33:13 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Tue Feb 5 20:33:13 2013 +0100
+
+    Add travis-ci configuration
+
+A	.travis.yml
+
+commit 83819d7dd77a34a9afe9b5266ae8ca1dd5d450fa
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Wed Jan 30 16:33:12 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Wed Jan 30 16:33:12 2013 +0100
+
+    Refactor and implement array storage strategy
+
+M	README.md
+A	lib/clone-schema.js
+A	lib/strategies/array.js
+A	lib/strategies/collection.js
+A	lib/strategies/index.js
+M	lib/version.js
+M	test/version.js
+
+commit cd7833b1cefdec4c12fe648cb6ccbc7508fbf222
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Sat Jan 26 19:49:02 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Sat Jan 26 19:49:02 2013 +0100
+
+    Describe 'logError' option
+
+M	README.md
+
+commit 9276a30927976debf3acadf6ee7788970b0fe95f
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Sat Jan 26 19:36:44 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Sat Jan 26 19:36:44 2013 +0100
+
+    Refactor schema cloning to it's own function
+
+M	lib/version.js
+
+commit 197437a8be490167c7806b4040ce93ac51d63cf7
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Sat Jan 26 19:33:06 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Sat Jan 26 19:33:06 2013 +0100
+
+    Add shortcut for options to supply a string as option value
+
+M	README.md
+M	lib/version.js
+M	test/version.js
+
+commit 7bb5536b35b5f1bb90fde60abeb2f6cd7e410139
+Author:     Christoph Walcher <c.walcher@diamonddogs.cc>
+AuthorDate: Fri Jan 18 15:17:30 2013 +0100
+Commit:     Christoph Walcher <c.walcher@diamonddogs.cc>
+CommitDate: Fri Jan 18 15:17:30 2013 +0100
+
+    Fix bug accessing wrong schema instance
+
+M	lib/version.js
+
+commit 932771d27c37079f80a4774010c001f034758e81
+Author:     Christoph Walcher <c.walcher@diamonddogs.cc>
+AuthorDate: Fri Jan 18 15:17:04 2013 +0100
+Commit:     Christoph Walcher <c.walcher@diamonddogs.cc>
+CommitDate: Fri Jan 18 15:17:04 2013 +0100
+
+    Add tests and dev dependencies
+
+M	package.json
+A	test/version.js
+
+commit b3c892469e6805c971081741217b4b6b3a2afef0
+Author:     Christoph Walcher <c.walcher@diamonddogs.cc>
+AuthorDate: Fri Jan 18 12:39:15 2013 +0100
+Commit:     Christoph Walcher <c.walcher@diamonddogs.cc>
+CommitDate: Fri Jan 18 12:39:15 2013 +0100
+
+    Increment package version for bug fix
+
+M	package.json
+
+commit 671014d81296eb6f3a7c0c013868e07ac6e89fac
+Author:     Christoph Walcher <c.walcher@diamonddogs.cc>
+AuthorDate: Fri Jan 18 12:38:40 2013 +0100
+Commit:     Christoph Walcher <c.walcher@diamonddogs.cc>
+CommitDate: Fri Jan 18 12:38:40 2013 +0100
+
+    Fix schema reference
+
+M	lib/version.js
+
+commit 0b7885bee989bd1a26fa2feaae33dddd214b3b2a
+Author:     saintelama <christoph.walcher@gmail.com>
+AuthorDate: Fri Jan 18 08:04:19 2013 +0100
+Commit:     saintelama <christoph.walcher@gmail.com>
+CommitDate: Fri Jan 18 08:04:19 2013 +0100
+
+    initial version
+
+A	.gitignore
+A	.npmignore
+A	README.md
+A	lib/version.js
+A	package.json

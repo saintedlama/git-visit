@@ -1,0 +1,17 @@
+commit f3d451a1f76e1cd95cf5284785de42034e8bc729
+Author:     RaymondLim <rayblim@gmail.com>
+AuthorDate: Mon Oct 29 13:51:26 2012 -0700
+Commit:     RaymondLim <rayblim@gmail.com>
+CommitDate: Mon Oct 29 13:51:26 2012 -0700
+
+    Merge branch 'master', remote-tracking branch 'origin' into rlim/tab-key-issue
+
+commit 77f109eeef1aa6e4389b006aa52528be1d34baa4
+Author:     Kraig Walker <kraig_walker@me.com>
+AuthorDate: Mon Oct 29 18:45:10 2012 +0000
+Commit:     Kraig Walker <kraig_walker@me.com>
+CommitDate: Mon Oct 29 18:45:10 2012 +0000
+
+    Changed CMD_COMMENT to "Toggle Line Comment"
+
+M	src/nls/root/strings.js

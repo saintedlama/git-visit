@@ -1,0 +1,32 @@
+{
+  "name": "git-visit",
+  "version": "1.0.0",
+  "description": "Git command line wrapping library to git visit commit history",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha --recursive -R spec",
+    "testdev": "mocha --recursive -R spec -g endtoendtest -i",
+    "cover": "istanbul cover ./node_modules/mocha/bin/_mocha --report html -- --recursive -R spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saintedlama/git-visit.git"
+  },
+  "author": "Christoph Walcher <christoph.walcher@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/saintedlama/git-visit/issues"
+  },
+  "homepage": "https://github.com/saintedlama/git-visit",
+  "dependencies": {
+    "async": "^0.9.0",
+    "string": "^3.0.0"
+  },
+  "devDependencies": {
+    "chai": "^1.10.0",
+    "mocha": "^2.1.0"
+  }
+}
