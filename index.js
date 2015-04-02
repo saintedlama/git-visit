@@ -3,6 +3,7 @@ var childProcess = require('child_process');
 var fs = require('fs');
 var parse = require('./parse');
 var async = require('async');
+var ssh = require('./lib/ssh');
 
 function Repository(path, url, options) {
   options = options || {};
@@ -29,11 +30,26 @@ Repository.prototype.update = function(cb) {
 };
 
 Repository.prototype.clone = function(cb) {
-  childProcess.exec(this.options.executable + ' clone ' + this.url + ' ' + this.path, cb);
+  this._gitCommand(this.options.executable + ' clone ' + this.url + ' ' + this.path, {}, cb);
 };
 
 Repository.prototype.pull = function(cb) {
-  childProcess.exec(this.options.executable + ' pull ', { cwd: this.path }, cb);
+  this._gitCommand(this.options.executable + ' pull ', { cwd: this.path}, cb);
+};
+
+Repository.prototype._gitCommand = function(gitCommand, options, cb) {
+  if (this.options.privateKey) {
+    return ssh(this.options.privateKey,
+      function(err, script, next) {
+        options = options || {};
+        options.env = options.env || {};
+        options.env.GIT_SSH = script;
+
+        childProcess.exec(gitCommand, options, next);
+      }, cb);
+  }
+
+  childProcess.exec(gitCommand, options, cb);
 };
 
 Repository.prototype.log = function(cb) {
