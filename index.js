@@ -5,6 +5,8 @@ var parse = require('./parse');
 var async = require('async');
 var ssh = require('./lib/ssh');
 
+var debug = require('debug')('git-visit');
+
 function Repository(path, url, options) {
   options = options || {};
   options.executable = options.executable || 'git';
@@ -22,8 +24,10 @@ Repository.prototype.update = function(cb) {
 
   fs.exists(this.path, function(exists) {
     if (exists) {
+      debug('Destination path %s exists. Pulling...', self.path);
       self.pull(cb);
     } else {
+      debug('Destination path %s does not exist. Cloning...', self.path);
       self.clone(cb);
     }
   });
@@ -39,8 +43,12 @@ Repository.prototype.pull = function(cb) {
 
 Repository.prototype._gitCommand = function(gitCommand, options, cb) {
   if (this.options.privateKey) {
+    debug('Private key provided. Using SSH command to execute git command %s', gitCommand);
+
     return ssh(this.options.privateKey,
       function(err, script, next) {
+        if (err) { return cb(err); }
+
         options = options || {};
         options.env = options.env || {};
         options.env.GIT_SSH = script;
@@ -48,6 +56,8 @@ Repository.prototype._gitCommand = function(gitCommand, options, cb) {
         childProcess.exec(gitCommand, options, next);
       }, cb);
   }
+
+  debug('Executing git command %s', gitCommand);
 
   childProcess.exec(gitCommand, options, cb);
 };
@@ -107,11 +117,13 @@ Repository.prototype.visit = function(visitor, cb) {
 
   self.update(function(err) {
     if (err) {
+      debug('Could not update repository due to error %s', err);
       return cb(err);
     }
 
     self.log(function(err, commits) {
       if (err) {
+        debug('Could not get a log for repository due to error %s', err);
         return cb(err);
       }
 
