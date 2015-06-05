@@ -53,13 +53,13 @@ Repository.prototype._gitCommand = function(gitCommand, options, cb) {
         options.env = options.env || {};
         options.env.GIT_SSH = script;
 
-        childProcess.exec(gitCommand, options, next);
+        childProcess.exec(gitCommand, options, wrapExecError(next));
       }, cb);
   }
 
   debug('Executing git command %s', gitCommand);
 
-  childProcess.exec(gitCommand, options, cb);
+  childProcess.exec(gitCommand, options, wrapExecError(cb));
 };
 
 Repository.prototype.log = function(cb) {
@@ -67,8 +67,7 @@ Repository.prototype.log = function(cb) {
     {
       cwd: this.path,
       maxBuffer : this.options.maxBufferForLog
-    },
-    function(err, stdout) {
+    },wrapExecError(function(err, stdout) {
       if (err) {
         return cb(err);
       }
@@ -79,15 +78,15 @@ Repository.prototype.log = function(cb) {
       } catch (err) {
         return cb(err);
       }
-    });
+    }));
 };
 
 Repository.prototype.checkout = function(ref, cb) {
-  childProcess.exec(this.options.executable + ' checkout -qf ' + ref, {cwd: this.path}, cb);
+  childProcess.exec(this.options.executable + ' checkout -qf ' + ref, {cwd: this.path}, wrapExecError(cb));
 };
 
 Repository.prototype.unmodify = function(cb) {
-  childProcess.exec(this.options.executable + ' checkout -qf -- .', {cwd: this.path}, cb);
+  childProcess.exec(this.options.executable + ' checkout -qf -- .', {cwd: this.path}, wrapExecError(cb));
 };
 
 Repository.prototype.show = function(file, rev, cb) {
@@ -95,7 +94,7 @@ Repository.prototype.show = function(file, rev, cb) {
       cwd: this.path ,
       maxBuffer : this.options.maxBufferForShow
     },
-    function(err, stdout) {
+    wrapExecError(function(err, stdout) {
       if (err) {
         return cb(err);
       }
@@ -105,7 +104,7 @@ Repository.prototype.show = function(file, rev, cb) {
       } catch (err) {
         return cb(err);
       }
-    });
+    }));
 };
 
 Repository.prototype.visit = function(visitor, cb) {
@@ -155,5 +154,16 @@ Repository.prototype._cleanupCheckout = function(cb, err, results) {
     cb(err, results);
   });
 };
+
+function wrapExecError(cb) {
+  return function(err, stdout, stderr) {
+    if (err) {
+      err.stdout = stdout.toString();
+      err.stderr = stderr.toString();
+    }
+
+    cb(err, stdout, stderr);
+  }
+}
 
 module.exports = Repository;
