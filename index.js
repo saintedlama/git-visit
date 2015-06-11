@@ -87,6 +87,42 @@ Repository.prototype.unmodify = function(cb) {
   exec(this.options.executable + ' checkout -qf -- .', {cwd: this.path}, cb);
 };
 
+Repository.prototype.initialCommit = function(cb) {
+  exec(this.options.executable + ' rev-list --max-parents=0 HEAD', function(err, stdout) {
+    if (err) { return cb(err); }
+
+    return cb(null, stdout.toString('utf-8'));
+  });
+};
+
+Repository.prototype.diff = function(leftRev, rightRev, cb) {
+  exec(this.options.executable + ' --no-pager diff --numstat ' + leftRev + ' ' + rightRev, function(err, stdout) {
+    if (err) { return cb(err); }
+
+    try {
+      var out = stdout.toString('utf-8');
+
+      var lines = out.split('\n');
+
+      var diffs = lines.map(function(line) {
+        var match = line.match(/(\d+)\s+(\d+)\s+(.+)/i);
+
+        if (!match) {
+           return;
+        }
+
+        return { added: parseInt(match[1], 10), deleted : parseInt(match[2], 10), path : match[3] };
+      }).filter(function(diff) {
+        return diff;
+      });
+
+      return cb(null, diffs);
+    } catch (err) {
+      return cb(err);
+    }
+  });
+};
+
 Repository.prototype.show = function(file, rev, cb) {
   exec(this.options.executable + ' --no-pager show ' + rev + ':' + file, {
       cwd: this.path ,

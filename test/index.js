@@ -120,5 +120,30 @@ describe('repository', function() {
         next();
       });
     });
+
+    it('should get a parsed git diff numstat [endtoendtest]', function(next) {
+      this.timeout(50000);
+
+      var repo = new Repository(testDir, 'https://github.com/saintedlama/mongoose-version.git', { privateKey : 'key' });
+
+      repo.update(function(err) {
+        expect(err).to.not.exist;
+
+        repo.initialCommit(function(err, hash) {
+          expect(err).to.not.exist;
+
+          repo.diff(hash, 'HEAD', function(err, diffs) {
+            expect(err).to.not.exist;
+
+            expect(diffs).to.exist;
+            expect(diffs[0].path).to.equal('.gitignore');
+            expect(diffs[0].added).to.equal(16);
+            expect(diffs[0].deleted).to.equal(0);
+
+            next();
+          });
+        });
+      });
+    });
   });
 });
