@@ -53,24 +53,22 @@ Repository.prototype._gitCommand = function(gitCommand, options, cb) {
         options.env = options.env || {};
         options.env.GIT_SSH = script;
 
-        childProcess.exec(gitCommand, options, wrapExecError(next));
+        exec(gitCommand, options, next);
       }, cb);
   }
 
   debug('Executing git command %s', gitCommand);
 
-  childProcess.exec(gitCommand, options, wrapExecError(cb));
+  exec(gitCommand, options, cb);
 };
 
 Repository.prototype.log = function(cb) {
-  childProcess.exec(this.options.executable + ' --no-pager log --name-status --no-merges --pretty=fuller',
+  exec(this.options.executable + ' --no-pager log --name-status --no-merges --pretty=fuller',
     {
       cwd: this.path,
       maxBuffer : this.options.maxBufferForLog
-    },wrapExecError(function(err, stdout) {
-      if (err) {
-        return cb(err);
-      }
+    }, function(err, stdout) {
+      if (err) { return cb(err); }
 
       try {
         var commits = parse(stdout.toString('utf-8'));
@@ -78,33 +76,30 @@ Repository.prototype.log = function(cb) {
       } catch (err) {
         return cb(err);
       }
-    }));
+    });
 };
 
 Repository.prototype.checkout = function(ref, cb) {
-  childProcess.exec(this.options.executable + ' checkout -qf ' + ref, {cwd: this.path}, wrapExecError(cb));
+  exec(this.options.executable + ' checkout -qf ' + ref, {cwd: this.path}, cb);
 };
 
 Repository.prototype.unmodify = function(cb) {
-  childProcess.exec(this.options.executable + ' checkout -qf -- .', {cwd: this.path}, wrapExecError(cb));
+  exec(this.options.executable + ' checkout -qf -- .', {cwd: this.path}, cb);
 };
 
 Repository.prototype.show = function(file, rev, cb) {
-  childProcess.exec(this.options.executable + ' --no-pager show ' + rev + ':' + file, {
+  exec(this.options.executable + ' --no-pager show ' + rev + ':' + file, {
       cwd: this.path ,
       maxBuffer : this.options.maxBufferForShow
-    },
-    wrapExecError(function(err, stdout) {
-      if (err) {
-        return cb(err);
-      }
+    }, function(err, stdout) {
+      if (err) { return cb(err); }
 
       try {
         return cb(null, stdout.toString('utf-8'));
       } catch (err) {
         return cb(err);
       }
-    }));
+    });
 };
 
 Repository.prototype.visit = function(visitor, cb) {
@@ -154,6 +149,10 @@ Repository.prototype._cleanupCheckout = function(cb, err, results) {
     cb(err, results);
   });
 };
+
+function exec(cmd, options, cb) {
+  childProcess.exec(cmd, options, wrapExecError(cb));
+}
 
 function wrapExecError(cb) {
   return function(err, stdout, stderr) {
