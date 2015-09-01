@@ -38,7 +38,14 @@ Repository.prototype.clone = function(cb) {
 };
 
 Repository.prototype.pull = function(cb) {
-  this._gitCommand(this.options.executable + ' pull ', { cwd: this.path}, cb);
+  var self = this;
+
+  // Assure to be on a branch to avoid detached working copies
+  self.checkout('master', function(err) {
+    if (err) { return cb(err); }
+
+    self._gitCommand(self.options.executable + ' pull ', { cwd: self.path}, cb);
+  });
 };
 
 Repository.prototype._gitCommand = function(gitCommand, options, cb) {
