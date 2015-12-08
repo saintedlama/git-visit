@@ -149,6 +149,7 @@ Repository.prototype.visit = function(visitor, cb) {
   visitor = visitor || {};
   visitor.test = visitor.test || function() { return true; };
   visitor.visit = visitor.visit || function(cb) { return cb(); };
+  visitor.init = visitor.init || function() { };
 
   var self = this;
 
@@ -165,6 +166,8 @@ Repository.prototype.visit = function(visitor, cb) {
       }
 
       var commitsToVisit = commits.filter(visitor.test);
+
+      visitor.init(self, commits);
 
       async.mapSeries(commitsToVisit, function(commit, cb) {
         self.unmodify(function(err) {
