@@ -30,7 +30,7 @@
     "chai": "^3.4.1",
     "coveralls": "^2.11.9",
     "cross-env": "^1.0.8",
-    "istanbul": "^0.4.3",
+    "istanbul": "^0.4.4",
     "mocha": "^2.1.0",
     "mocha-lcov-reporter": "^1.2.0",
     "rimraf": "^2.4.3",
