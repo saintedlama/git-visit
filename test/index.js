@@ -47,7 +47,7 @@ describe('repository', function() {
       var repo = new Repository(testDir, 'https://github.com/saintedlama/mongoose-version.git');
       repo.visit(visitor, function(err) {
         expect(err).to.not.exist;
-        expect(visitor.counter).to.equal(57);
+        expect(visitor.counter).to.equal(70);
 
         next();
       });
@@ -67,7 +67,7 @@ describe('repository', function() {
       var repo = new Repository(testDir, 'https://github.com/saintedlama/mongoose-version.git', { privateKey : 'a0' });
       repo.visit(visitor, function(err) {
         expect(err).to.not.exist;
-        expect(visitor.counter).to.equal(57);
+        expect(visitor.counter).to.equal(70);
 
         next();
       });
@@ -87,7 +87,7 @@ describe('repository', function() {
         expect(err).to.not.exist;
 
         expect(results).to.exist;
-        expect(results.length).to.equal(57);
+        expect(results.length).to.equal(70);
 
         results.forEach(function(result) {
           expect(result).to.equal(1);
@@ -111,7 +111,7 @@ describe('repository', function() {
         expect(err).to.not.exist;
 
         expect(results).to.exist;
-        expect(results.length).to.equal(57);
+        expect(results.length).to.equal(70);
 
         results.forEach(function(result) {
           expect(result).to.equal(1);
