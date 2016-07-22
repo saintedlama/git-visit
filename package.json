@@ -33,7 +33,7 @@
     "istanbul": "^0.4.4",
     "mocha": "^2.5.3",
     "mocha-lcov-reporter": "^1.2.0",
-    "rimraf": "^2.5.3",
+    "rimraf": "^2.5.4",
     "shelljs": "^0.7.0"
   }
 }
