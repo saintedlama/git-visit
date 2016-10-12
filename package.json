@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/saintedlama/git-visit",
   "dependencies": {
-    "async": "^2.0.0",
+    "async": "^2.1.0",
     "debug": "^2.2.0",
     "string": "^3.3.1"
   },
