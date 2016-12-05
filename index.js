@@ -64,8 +64,6 @@ Repository.prototype._gitCommand = function(gitCommand, options, cb) {
       }, cb);
   }
 
-  debug('Executing git command %s', gitCommand);
-
   exec(gitCommand, options, cb);
 };
 
@@ -197,6 +195,8 @@ Repository.prototype._cleanupCheckout = function(cb, err, results) {
 };
 
 function exec(cmd, options, cb) {
+  debug('Executing command %s', cmd);
+
   childProcess.exec(cmd, options, wrapExecError(cb));
 }
 
