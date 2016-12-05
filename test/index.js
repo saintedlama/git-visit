@@ -5,15 +5,19 @@ var rimraf = require('rimraf');
 var expect = require('chai').expect;
 var Repository = require('../');
 
+var debug = require('debug')('git-visit');
+
 const remoteUrl = path.join(__dirname, 'fixtures', 'repo');
-const cloneDir = path.join(__dirname, '..', '..', 'git-visit-test-tmp');
+const cloneDir = path.join(__dirname, '..', 'test_tmp');
 
 describe('repository', function() {
   this.timeout(5000);
 
-
-  beforeEach(function() {
-    rimraf.sync(cloneDir);
+  beforeEach(function(next) {
+    rimraf(cloneDir, (err) => {
+      if (err) { debug(err); }
+      next();
+    });
   });
 
   describe('show', function() {
