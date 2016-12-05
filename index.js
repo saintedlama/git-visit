@@ -34,7 +34,7 @@ Repository.prototype.update = function(cb) {
 };
 
 Repository.prototype.clone = function(cb) {
-  this._gitCommand(this.options.executable + ' clone ' + this.url + ' ' + this.path, {}, cb);
+  this._gitCommand(`${this.options.executable} clone ${this.url} ${this.path}`, {}, cb);
 };
 
 Repository.prototype.pull = function(cb) {
@@ -44,7 +44,7 @@ Repository.prototype.pull = function(cb) {
   self.checkout('master', function(err) {
     if (err) { return cb(err); }
 
-    self._gitCommand(self.options.executable + ' pull ', { cwd: self.path}, cb);
+    self._gitCommand(`${this.options.executable} pull `, { cwd: self.path}, cb);
   });
 };
 
@@ -70,7 +70,7 @@ Repository.prototype._gitCommand = function(gitCommand, options, cb) {
 };
 
 Repository.prototype.log = function(cb) {
-  exec(this.options.executable + ' --no-pager log --name-status --no-merges --pretty=fuller',
+  exec(`${this.options.executable} --no-pager log --name-status --no-merges --pretty=fuller`,
     {
       cwd: this.path,
       maxBuffer : this.options.maxBufferForLog
@@ -87,15 +87,15 @@ Repository.prototype.log = function(cb) {
 };
 
 Repository.prototype.checkout = function(ref, cb) {
-  exec(this.options.executable + ' checkout -qf ' + ref, {cwd: this.path}, cb);
+  exec(`${this.options.executable} checkout -qf ${ref}`, {cwd: this.path}, cb);
 };
 
 Repository.prototype.unmodify = function(cb) {
-  exec(this.options.executable + ' checkout -qf -- .', {cwd: this.path}, cb);
+  exec(`${this.options.executable} checkout -qf -- .`, {cwd: this.path}, cb);
 };
 
 Repository.prototype.initialCommit = function(cb) {
-  exec(this.options.executable + ' rev-list --max-parents=0 HEAD', function(err, stdout) {
+  exec(`${this.options.executable} rev-list --max-parents=0 HEAD`, {cwd: this.path}, function(err, stdout) {
     if (err) { return cb(err); }
 
     return cb(null, stdout.toString('utf-8'));
@@ -103,7 +103,7 @@ Repository.prototype.initialCommit = function(cb) {
 };
 
 Repository.prototype.diff = function(leftRev, rightRev, cb) {
-  exec(this.options.executable + ' --no-pager diff --numstat ' + leftRev + ' ' + rightRev, function(err, stdout) {
+  exec(`${this.options.executable} --no-pager diff --numstat ${leftRev} ${rightRev}`, {cwd: this.path}, function(err, stdout) {
     if (err) { return cb(err); }
 
     try {
