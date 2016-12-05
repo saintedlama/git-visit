@@ -96,7 +96,14 @@ Repository.prototype.initialCommit = function(cb) {
   exec(`${this.options.executable} rev-list --max-parents=0 HEAD`, {cwd: this.path}, function(err, stdout) {
     if (err) { return cb(err); }
 
-    return cb(null, stdout.toString('utf-8'));
+    const output = stdout.toString('utf-8');
+    const match = output.match(/[0-9a-f]*/);
+
+    if (!match.length > 0) {
+      return cb(new Error('Could not get initianl commit from rev-list'));
+    }
+
+    return cb(null, match[0]);
   });
 };
 
