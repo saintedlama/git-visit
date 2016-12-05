@@ -1,7 +1,8 @@
 var S = require('string');
 
 module.exports = function parse(commitLog) {
-  var commitLogLines = commitLog.split('\n');
+  // see: http://www.unicode.org/reports/tr18/#Line_Boundaries
+  var commitLogLines = commitLog.split(/\r\n|[\n\v\f\r\x85\u2028\u2029]/g);
 
   var commits = [];
   var commit;
@@ -53,9 +54,8 @@ function parseCommit(commitLogLines) {
   return commit;
 }
 
-// TODO: Make regex match code save!
 function parseHash(hashLine) {
-  return /^commit\s([0-9a-f]*)$/.exec(hashLine)[1];
+  return extractMatch(/^commit\s([0-9a-f]*)$/.exec(hashLine), 1);
 }
 
 function isCommitStart(hashLine) {
@@ -63,23 +63,31 @@ function isCommitStart(hashLine) {
 }
 
 function parseAuthor(authorLine) {
-  return parseNameIdentifier(/^Author:\s+(.*)$/.exec(authorLine)[1]);
+  return parseNameIdentifier(extractMatch(/^Author:\s+(.*)$/.exec(authorLine), 1));
 }
 
 function parseAuthorDate(dateLine) {
-  var dateRaw = /^AuthorDate:\s(.*)$/.exec(dateLine)[1];
+  var dateRaw = extractMatch(/^AuthorDate:\s(.*)$/.exec(dateLine), 1);
 
   return new Date(dateRaw);
 }
 
 function parseCommitter(committerLine) {
-  return parseNameIdentifier(/^Commit:\s+(.*)$/.exec(committerLine)[1]);
+  return parseNameIdentifier(extractMatch(/^Commit:\s+(.*)$/.exec(committerLine), 1));
 }
 
 function parseCommitterDate(dateLine) {
-  var dateRaw = /^CommitDate:\s(.*)$/.exec(dateLine)[1];
+  var dateRaw = extractMatch(/^CommitDate:\s(.*)$/.exec(dateLine), 1);
 
   return new Date(dateRaw);
+}
+
+function extractMatch(matches, index) {
+  if (matches.length > index) {
+    return matches[index];
+  }
+
+  return null;
 }
 
 // --diff-filter=[(A|C|D|M|R|T|U|X|B)...[*]]::
