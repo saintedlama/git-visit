@@ -1,6 +1,6 @@
 var shell = require('shelljs');
 
-if (exec('git status --porcelain').output != '') {
+if (exec('git status --porcelain').stdout != '') {
   console.error('Git working directory not clean.');
   process.exit(2);
 }
@@ -14,7 +14,7 @@ if (versionIncrement != 'major' && versionIncrement != 'minor' && versionIncreme
 
 exec('npm version ' + versionIncrement);
 
-exec('npm test'); 
+exec('npm test');
 exec('git push');
 exec('git push --tags');
 exec('npm publish');
