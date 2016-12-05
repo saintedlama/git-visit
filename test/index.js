@@ -80,5 +80,25 @@ describe('repository', function() {
         });
       });
     });
+
+    it('should add first and last flags to commits', function(next) {
+      var visitor = {
+        commits : [],
+        visit : function(repo, commit, cb) {
+          this.commits.push(commit);
+
+          cb();
+        }
+      };
+
+      var repo = new Repository(cloneDir, remoteUrl);
+      repo.visit(visitor, function(err) {
+        expect(err).to.not.exist;
+        expect(visitor.commits[0].isFirst).to.equal(true);
+        expect(visitor.commits[visitor.commits.length - 1].isLast).to.equal(true);
+
+        next();
+      });
+    });
   });
 });

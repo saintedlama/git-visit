@@ -156,7 +156,7 @@ Repository.prototype.visit = function(visitor, cb) {
   visitor.visit = visitor.visit || function(cb) { return cb(); };
   visitor.init = visitor.init || function() { };
 
-  var self = this;
+  const self = this;
 
   self.update(function(err) {
     if (err) {
@@ -170,9 +170,14 @@ Repository.prototype.visit = function(visitor, cb) {
         return cb(err);
       }
 
-      var commitsToVisit = commits.filter(visitor.test);
+      const commitsToVisit = commits.filter(visitor.test);
 
       visitor.init(self, commits);
+
+      if (commits.length > 0) {
+        commits[0].isFirst = true;
+        commits[commits.length - 1].isLast = true;
+      }
 
       async.mapSeries(commitsToVisit, function(commit, cb) {
         self.unmodify(function(err) {
