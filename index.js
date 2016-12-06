@@ -1,11 +1,11 @@
-var childProcess = require('child_process');
+const childProcess = require('child_process');
 
-var fs = require('fs');
-var parse = require('./parse');
-var async = require('async');
-var ssh = require('./lib/ssh');
+const fs = require('fs');
+const parse = require('./parse');
+const async = require('async');
+const ssh = require('./lib/ssh');
 
-var debug = require('debug')('git-visit');
+const debug = require('debug')('git-visit');
 
 function Repository(path, url, options) {
   options = options || {};
@@ -20,15 +20,13 @@ function Repository(path, url, options) {
 }
 
 Repository.prototype.update = function(cb) {
-  var self = this;
-
-  fs.exists(this.path, function(exists) {
+  fs.exists(this.path, (exists) => {
     if (exists) {
-      debug('Destination path %s exists. Pulling...', self.path);
-      self.pull(cb);
+      debug('Destination path %s exists. Pulling...', this.path);
+      this.pull(cb);
     } else {
-      debug('Destination path %s does not exist. Cloning...', self.path);
-      self.clone(cb);
+      debug('Destination path %s does not exist. Cloning...', this.path);
+      this.clone(cb);
     }
   });
 };
@@ -38,13 +36,11 @@ Repository.prototype.clone = function(cb) {
 };
 
 Repository.prototype.pull = function(cb) {
-  var self = this;
-
   // Assure to be on a branch to avoid detached working copies
-  self.checkout('master', function(err) {
+  this.checkout('master', (err) => {
     if (err) { return cb(err); }
 
-    self._gitCommand(`${this.options.executable} pull `, { cwd: self.path}, cb);
+    this._gitCommand(`${this.options.executable} pull `, { cwd: this.path}, cb);
   });
 };
 
@@ -76,7 +72,7 @@ Repository.prototype.log = function(cb) {
       if (err) { return cb(err); }
 
       try {
-        var commits = parse(stdout.toString('utf-8'));
+        const commits = parse(stdout.toString('utf-8'));
         return cb(null, commits);
       } catch (err) {
         return cb(err);
@@ -100,7 +96,7 @@ Repository.prototype.initialCommit = function(cb) {
     const match = output.match(/[0-9a-f]*/);
 
     if (!match.length > 0) {
-      return cb(new Error('Could not get initianl commit from rev-list'));
+      return cb(new Error('Could not get initial commit from rev-list'));
     }
 
     return cb(null, match[0]);
@@ -112,21 +108,19 @@ Repository.prototype.diff = function(leftRev, rightRev, cb) {
     if (err) { return cb(err); }
 
     try {
-      var out = stdout.toString('utf-8');
+      const out = stdout.toString('utf-8');
+      // see: http://www.unicode.org/reports/tr18/#Line_Boundaries
+      const lines = out.split(/\r\n|[\n\v\f\r\x85\u2028\u2029]/g);
 
-      var lines = out.split('\n');
-
-      var diffs = lines.map(function(line) {
-        var match = line.match(/(\d+)\s+(\d+)\s+(.+)/i);
+      const diffs = lines.map(function(line) {
+        const match = line.match(/(\d+)\s+(\d+)\s+(.+)/i);
 
         if (!match) {
            return;
         }
 
         return { added: parseInt(match[1], 10), deleted : parseInt(match[2], 10), path : match[3] };
-      }).filter(function(diff) {
-        return diff;
-      });
+      }).filter(diff => diff);
 
       return cb(null, diffs);
     } catch (err) {
@@ -136,7 +130,7 @@ Repository.prototype.diff = function(leftRev, rightRev, cb) {
 };
 
 Repository.prototype.show = function(file, rev, cb) {
-  exec(this.options.executable + ' --no-pager show ' + rev + ':' + file, {
+  exec(`${this.options.executable} --no-pager show ${rev}:${file}`, {
       cwd: this.path ,
       maxBuffer : this.options.maxBufferForShow
     }, function(err, stdout) {
@@ -156,15 +150,13 @@ Repository.prototype.visit = function(visitor, cb) {
   visitor.visit = visitor.visit || function(cb) { return cb(); };
   visitor.init = visitor.init || function() { };
 
-  const self = this;
-
-  self.update(function(err) {
+  this.update((err) => {
     if (err) {
       debug('Could not update repository due to error %s', err);
       return cb(err);
     }
 
-    self.log(function(err, commits) {
+    this.log((err, commits) => {
       if (err) {
         debug('Could not get a log for repository due to error %s', err);
         return cb(err);
@@ -172,29 +164,29 @@ Repository.prototype.visit = function(visitor, cb) {
 
       const commitsToVisit = commits.filter(visitor.test);
 
-      visitor.init(self, commits);
+      visitor.init(this, commits);
 
       if (commits.length > 0) {
         commits[0].isFirst = true;
         commits[commits.length - 1].isLast = true;
       }
 
-      async.mapSeries(commitsToVisit, function(commit, cb) {
-        self.unmodify(function(err) {
+      async.mapSeries(commitsToVisit, (commit, cb) => {
+        this.unmodify((err) => {
           if (err) {
-            return self._cleanupCheckout(cb, err);
+            return this._cleanupCheckout(cb, err);
           }
 
-          self.checkout(commit.hash, function(err) {
+          this.checkout(commit.hash, (err) => {
             if (err) {
-              return self._cleanupCheckout(cb, err);
+              return this._cleanupCheckout(cb, err);
             }
 
-            visitor.visit(self, commit, cb);
+            visitor.visit(this, commit, cb);
           });
         });
-      }, function(err, results) {
-        self._cleanupCheckout(cb, err, results);
+      }, (err, results) => {
+        this._cleanupCheckout(cb, err, results);
       });
     });
   });

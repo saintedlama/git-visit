@@ -1,11 +1,11 @@
-var S = require('string');
+const S = require('string');
 
 module.exports = function parse(commitLog) {
   // see: http://www.unicode.org/reports/tr18/#Line_Boundaries
-  var commitLogLines = commitLog.split(/\r\n|[\n\v\f\r\x85\u2028\u2029]/g);
+  const commitLogLines = commitLog.split(/\r\n|[\n\v\f\r\x85\u2028\u2029]/g);
 
-  var commits = [];
-  var commit;
+  const commits = [];
+  let commit;
   while(commit = parseCommit(commitLogLines)) {
     commits.push(commit);
   }
@@ -18,7 +18,7 @@ function parseCommit(commitLogLines) {
     return;
   }
 
-  var commit = {
+  const commit = {
     hash : parseHash(commitLogLines.shift()),
     author: parseAuthor(commitLogLines.shift()),
     authorDate: parseAuthorDate(commitLogLines.shift()),
@@ -28,8 +28,8 @@ function parseCommit(commitLogLines) {
 
   commitLogLines.shift();
 
-  var messageParts = [];
-  var messagePart;
+  const messageParts = [];
+  let messagePart;
   while ((messagePart = commitLogLines.shift()).length > 1) {
     messageParts.push(S(messagePart).trimLeft().s);
   }
@@ -43,8 +43,8 @@ function parseCommit(commitLogLines) {
     }
   }
 
-  var files = [];
-  var file;
+  const files = [];
+  let file;
   while ((file = commitLogLines.shift()).length > 1) {
     files.push(parseFileNameStat(file));
   }
@@ -67,7 +67,7 @@ function parseAuthor(authorLine) {
 }
 
 function parseAuthorDate(dateLine) {
-  var dateRaw = extractMatch(/^AuthorDate:\s(.*)$/.exec(dateLine), 1);
+  const dateRaw = extractMatch(/^AuthorDate:\s(.*)$/.exec(dateLine), 1);
 
   return new Date(dateRaw);
 }
@@ -77,7 +77,7 @@ function parseCommitter(committerLine) {
 }
 
 function parseCommitterDate(dateLine) {
-  var dateRaw = extractMatch(/^CommitDate:\s(.*)$/.exec(dateLine), 1);
+  const dateRaw = extractMatch(/^CommitDate:\s(.*)$/.exec(dateLine), 1);
 
   return new Date(dateRaw);
 }
@@ -102,7 +102,7 @@ function extractMatch(matches, index) {
 // other criteria in the comparison; if there is no file
 // that matches other criteria, nothing is selected.
 function parseFileNameStat(fileModeName) {
-  var match = /^([ACDMRTUXB*])\s(.*)$/.exec(fileModeName);
+  const match = /^([ACDMRTUXB*])\s(.*)$/.exec(fileModeName);
 
   return {
     mode : match[1],
@@ -111,7 +111,7 @@ function parseFileNameStat(fileModeName) {
 }
 
 function parseNameIdentifier(nameIdentifier) {
-  var match = /^(.*)\s<(.*)>$/.exec(nameIdentifier);
+  const match = /^(.*)\s<(.*)>$/.exec(nameIdentifier);
 
   return {
     name : match[1],

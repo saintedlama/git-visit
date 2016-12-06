@@ -11,7 +11,7 @@ const remoteUrl = path.join(__dirname, 'fixtures', 'repo');
 const cloneDir = path.join(__dirname, '..', 'test_tmp');
 
 describe('repository', function() {
-  this.timeout(5000);
+  this.timeout(10000);
 
   beforeEach(function(next) {
     rimraf(cloneDir, (err) => {
