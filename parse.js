@@ -30,7 +30,7 @@ function parseCommit(commitLogLines) {
 
   const messageParts = [];
   let messagePart;
-  while ((messagePart = commitLogLines.shift()).length > 1) {
+  while (isNotEmpty(messagePart = commitLogLines.shift())) {
     messageParts.push(S(messagePart).trimLeft().s);
   }
 
@@ -45,13 +45,17 @@ function parseCommit(commitLogLines) {
 
   const files = [];
   let file;
-  while ((file = commitLogLines.shift()).length > 1) {
+  while (isNotEmpty(file = commitLogLines.shift())) {
     files.push(parseFileNameStat(file));
   }
 
   commit.files = files;
 
   return commit;
+}
+
+function isNotEmpty(line) {
+  return line && line.length > 0;
 }
 
 function parseHash(hashLine) {
@@ -102,11 +106,29 @@ function extractMatch(matches, index) {
 // other criteria in the comparison; if there is no file
 // that matches other criteria, nothing is selected.
 function parseFileNameStat(fileModeName) {
-  const match = /^([ACDMRTUXB*])\s(.*)$/.exec(fileModeName);
+  const fileModes = fileModeName.split(/\s+/g);
+
+  if (!fileModes || fileModes.length < 2) {
+    return {};
+  }
+
+  let mode = fileModes[0];
+  let similarity;
+  let path = fileModes[1];
+  let fromPath;
+
+  if (mode[0] == 'R' || mode[0] == 'C') {
+    similarity = parseInt(mode.substring(1), 10);
+    mode = mode[0];
+    path = fileModes[2];
+    fromPath = fileModes[1];
+  }
 
   return {
-    mode : match[1],
-    path : match[2]
+    mode,
+    path,
+    similarity,
+    fromPath
   }
 }
 

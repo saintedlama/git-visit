@@ -1,18 +1,31 @@
-var fs = require('fs');
-var expect = require('chai').expect;
+const fs = require('fs');
+const expect = require('chai').expect;
 
-var parse = require('../parse');
+const parse = require('../parse');
 
-var path = require('path');
+const path = require('path');
 
-var logInput = fs.readFileSync(path.join(__dirname, 'fixtures/gitlog.txt'), 'utf-8');
-var logInputWithoutFiles = fs.readFileSync(path.join(__dirname, 'fixtures/gitlogwithoutfiles.txt'), 'utf-8');
+const logInput = fs.readFileSync(path.join(__dirname, 'fixtures/gitlog.txt'), 'utf-8');
+const logInputWithoutFiles = fs.readFileSync(path.join(__dirname, 'fixtures/gitlog-without-files.txt'), 'utf-8');
+const logInputWithRenames = fs.readFileSync(path.join(__dirname, 'fixtures/gitlog-with-renames.txt'), 'utf-8');
 
 describe('parse', function() {
   it('should parse correct commit entries count', function() {
     var entries = parse(logInput);
 
     expect(entries.length).to.equal(55);
+  });
+
+  it('should parse commit entries with renames', function() {
+    const entries = parse(logInputWithRenames);
+
+    expect(entries.length).to.equal(2);
+    expect(entries[0].files[0]).to.deep.equal({
+      mode: 'R',
+      similarity: 100,
+      fromPath: 'templates/app/public/css/bootstrap-responsive.css',
+      path: 'templates/app/public/vendor/bootstrap/css/bootstrap-responsive.css',
+    })
   });
 
   it('should parse information from commit entry', function() {

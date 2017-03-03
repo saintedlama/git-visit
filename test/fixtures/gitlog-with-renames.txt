@@ -1,0 +1,28 @@
+commit f4a768ff2a1ffca693f5fa44692f3a122b405179
+Author:     Christoph Walcher <Christoph.Walcher@gmail.com>
+AuthorDate: Mon Jan 7 07:28:13 2013 -0800
+Commit:     Christoph Walcher <Christoph.Walcher@gmail.com>
+CommitDate: Mon Jan 7 07:28:13 2013 -0800
+
+    Create LICENSE
+
+A       LICENSE
+
+commit 216709d6b1f2a24afa48f0ca82c192c58eeb5126
+Author:     Christoph Walcher <c.walcher@diamonddogs.cc>
+AuthorDate: Mon Jan 7 16:18:58 2013 +0100
+Commit:     Christoph Walcher <c.walcher@diamonddogs.cc>
+CommitDate: Mon Jan 7 16:18:58 2013 +0100
+
+    Reorganize public folder
+
+R100    templates/app/public/css/bootstrap-responsive.css       templates/app/public/vendor/bootstrap/css/bootstrap-responsive.css
+R100    templates/app/public/css/bootstrap-responsive.min.css   templates/app/public/vendor/bootstrap/css/bootstrap-responsive.min.css
+R100    templates/app/public/css/bootstrap.css  templates/app/public/vendor/bootstrap/css/bootstrap.css
+R100    templates/app/public/css/bootstrap.min.css      templates/app/public/vendor/bootstrap/css/bootstrap.min.css
+R100    templates/app/public/img/glyphicons-halflings-white.png templates/app/public/vendor/bootstrap/img/glyphicons-halflings-white.png
+R100    templates/app/public/img/glyphicons-halflings.png       templates/app/public/vendor/bootstrap/img/glyphicons-halflings.png
+R100    templates/app/public/js/bootstrap.js    templates/app/public/vendor/bootstrap/js/bootstrap.js
+R100    templates/app/public/js/bootstrap.min.js        templates/app/public/vendor/bootstrap/js/bootstrap.min.js
+R100    templates/app/public/js/jquery.min.js   templates/app/public/vendor/jquery/js/jquery.min.js
+M       templates/app/views/layout.jade
