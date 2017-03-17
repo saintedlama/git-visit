@@ -1,13 +1,14 @@
-var path = require('path');
-var fs = require('fs');
-var rimraf = require('rimraf');
+const path = require('path');
+const fs = require('fs');
+const rimraf = require('rimraf');
+const fileUrl = require('file-url');
 
-var expect = require('chai').expect;
-var Repository = require('../');
+const expect = require('chai').expect;
+const Repository = require('../');
 
-var debug = require('debug')('git-visit');
+const debug = require('debug')('git-visit');
 
-const remoteUrl = path.join(__dirname, 'fixtures', 'repo');
+const remoteUrl = fileUrl(path.join(__dirname, 'fixtures', 'repo'));
 const cloneDir = path.join(__dirname, '..', 'test_tmp');
 
 describe('repository', function() {
@@ -23,7 +24,7 @@ describe('repository', function() {
   describe('show', function() {
     it('should show file contents of a specific revision', function(next) {
 
-      var repo = new Repository(cloneDir, remoteUrl);
+      const repo = new Repository(cloneDir, remoteUrl);
       repo.update(function(err) {
         expect(err).to.not.exist;
 
@@ -39,27 +40,9 @@ describe('repository', function() {
     });
   });
 
-  describe('visit', function() {
-    it('should clone the repo if the repo does not exist', function(next) {
-      var visitor = {
-        counter : 0,
-        visit : function(repo, commit, cb) {
-          this.counter ++;
-          cb();
-        }
-      };
-
-      var repo = new Repository(cloneDir, remoteUrl);
-      repo.visit(visitor, function(err) {
-        expect(err).to.not.exist;
-        expect(visitor.counter).to.equal(5);
-
-        next();
-      });
-    });
-
+  describe('diff', function() {
     it('should get a parsed git diff numstat', function(next) {
-      var repo = new Repository(cloneDir, remoteUrl);
+      const repo = new Repository(cloneDir, remoteUrl);
 
       repo.update(function(err) {
         expect(err).to.not.exist;
@@ -80,9 +63,46 @@ describe('repository', function() {
         });
       });
     });
+  });
+
+  describe('update', function() {
+    it('should pass clone options to git command', function(next) {
+      const repo = new Repository(cloneDir, remoteUrl, { clone: { depth: 1 } });
+
+      repo.update(function(err) {
+        expect(err).to.not.exist;
+
+        repo.log((err, log) => {
+          expect(err).to.not.exist;
+
+          expect(log.length).to.equal(1);
+          next();
+        });
+      });
+    });
+  });
+
+  describe('visit', function() {
+    it('should clone the repo if the repo does not exist', function(next) {
+      const visitor = {
+        counter : 0,
+        visit : function(repo, commit, cb) {
+          this.counter ++;
+          cb();
+        }
+      };
+
+      const repo = new Repository(cloneDir, remoteUrl);
+      repo.visit(visitor, function(err) {
+        expect(err).to.not.exist;
+        expect(visitor.counter).to.equal(5);
+
+        next();
+      });
+    });
 
     it('should add first and last flags to commits', function(next) {
-      var visitor = {
+      const visitor = {
         commits : [],
         visit : function(repo, commit, cb) {
           this.commits.push(commit);
@@ -91,7 +111,7 @@ describe('repository', function() {
         }
       };
 
-      var repo = new Repository(cloneDir, remoteUrl);
+      const repo = new Repository(cloneDir, remoteUrl);
       repo.visit(visitor, function(err) {
         expect(err).to.not.exist;
         expect(visitor.commits[0].isFirst).to.equal(true);

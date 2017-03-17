@@ -1,6 +1,7 @@
 const childProcess = require('child_process');
-
+const opted = require('opted');
 const fs = require('fs');
+
 const parse = require('./parse');
 const async = require('async');
 const ssh = require('./lib/ssh');
@@ -11,7 +12,12 @@ function Repository(path, url, options) {
   options = options || {};
   options.executable = options.executable || 'git';
   options.maxBufferForLog = options.maxBufferForLog || 40 * 1024 * 1024; // 40 MB;
-  options.maxBufferForShow =options.maxBufferForShow ||10 * 1024 * 1024; // 10MB;
+  options.maxBufferForShow = options.maxBufferForShow ||10 * 1024 * 1024; // 10MB;
+
+  options.defaultBranch = options.defaultBranch || 'master';
+
+  options.clone = options.clone || {};
+  options.pull = options.pull || {};
 
   this.options = options;
 
@@ -32,15 +38,19 @@ Repository.prototype.update = function(cb) {
 };
 
 Repository.prototype.clone = function(cb) {
-  this._gitCommand(`${this.options.executable} clone ${this.url} ${this.path}`, {}, cb);
+  const additionalOptions = opted(this.options.clone).join(' ');
+
+  this._gitCommand(`${this.options.executable} clone ${additionalOptions} ${this.url} ${this.path}`, {}, cb);
 };
 
 Repository.prototype.pull = function(cb) {
   // Assure to be on a branch to avoid detached working copies
-  this.checkout('master', (err) => {
+  this.checkout(this.options.defaultBranch, (err) => {
     if (err) { return cb(err); }
 
-    this._gitCommand(`${this.options.executable} pull `, { cwd: this.path}, cb);
+    const additionalOptions = opted(this.options.clone).join(' ');
+
+    this._gitCommand(`${this.options.executable} pull ${additionalOptions} `, { cwd: this.path}, cb);
   });
 };
 
@@ -193,7 +203,7 @@ Repository.prototype.visit = function(visitor, cb) {
 };
 
 Repository.prototype._cleanupCheckout = function(cb, err, results) {
-  this.checkout('master', function() { // TODO: Deal with this error too!
+  this.checkout(this.options.defaultBranch, function() { // TODO: Deal with this error too!
     cb(err, results);
   });
 };
