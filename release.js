@@ -12,12 +12,22 @@ if (versionIncrement != 'major' && versionIncrement != 'minor' && versionIncreme
   process.exit(1);
 }
 
+console.log('Everything looks fine. Starting release process...');
+
 exec('npm version ' + versionIncrement);
+console.log(`done npm version ${versionIncrement}`);
 
 exec('npm test');
+console.log(`done npm test`);
+
 exec('git push');
+console.log(`done git push`);
+
 exec('git push --tags');
+console.log(`done git push --tags`);
+
 exec('npm publish');
+console.log(`Package releases successfully`);
 
 function exec(cmd) {
   const ret = shell.exec(cmd, { silent : true });
