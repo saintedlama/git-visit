@@ -48,7 +48,7 @@ Repository.prototype.pull = function(cb) {
   this.checkout(this.options.defaultBranch, (err) => {
     if (err) { return cb(err); }
 
-    const additionalOptions = opted(this.options.clone).join(' ');
+    const additionalOptions = opted(this.options.pull).join(' ');
 
     this._gitCommand(`${this.options.executable} pull ${additionalOptions} `, { cwd: this.path}, cb);
   });
