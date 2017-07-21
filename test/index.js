@@ -1,6 +1,5 @@
 const path = require('path');
-const fs = require('fs');
-const rimraf = require('rimraf');
+const fs = require('fs-extra');
 const fileUrl = require('file-url');
 
 const expect = require('chai').expect;
@@ -14,111 +13,75 @@ const cloneDir = path.join(__dirname, '..', 'test_tmp');
 describe('repository', function() {
   this.timeout(10000);
 
-  beforeEach(function(next) {
-    rimraf(cloneDir, (err) => {
-      if (err) { debug(err); }
-      next();
-    });
-  });
+  beforeEach(() => fs.remove(cloneDir));
 
   describe('show', function() {
-    it('should show file contents of a specific revision', function(next) {
+    it('should show file contents of a specific revision', async () => {
 
       const repo = new Repository(cloneDir, remoteUrl);
-      repo.update(function(err) {
-        expect(err).to.not.exist;
+      await repo.update();
+      const contents = await repo.show('README.md', 'c43f0f08c9da96b951aabce724795a20ed8149ce');
 
-        repo.show('README.md', 'c43f0f08c9da96b951aabce724795a20ed8149ce', function(err, contents) {
-          expect(err).to.not.exist;
-
-          expect(contents).to.contain('Change 1');
-          expect(contents).to.not.contain('Change 2');
-
-          next();
-        })
-      });
+      expect(contents).to.contain('Change 1');
+      expect(contents).to.not.contain('Change 2');
     });
   });
 
   describe('diff', function() {
-    it('should get a parsed git diff numstat', function(next) {
+    it('should get a parsed git diff numstat', async () => {
       const repo = new Repository(cloneDir, remoteUrl);
 
-      repo.update(function(err) {
-        expect(err).to.not.exist;
+      await repo.update();
+      const hash = await repo.initialCommit()
+      const diffs = await repo.diff(hash, 'HEAD');
 
-        repo.initialCommit(function(err, hash) {
-          expect(err).to.not.exist;
-
-          repo.diff(hash, 'HEAD', function(err, diffs) {
-            expect(err).to.not.exist;
-
-            expect(diffs).to.exist;
-            expect(diffs[0].path).to.equal('README.md');
-            expect(diffs[0].added).to.equal(7);
-            expect(diffs[0].deleted).to.equal(0);
-
-            next();
-          });
-        });
-      });
+      expect(diffs).to.exist;
+      expect(diffs[0].path).to.equal('README.md');
+      expect(diffs[0].added).to.equal(7);
+      expect(diffs[0].deleted).to.equal(0);
     });
   });
 
   describe('update', function() {
-    it('should pass clone options to git command', function(next) {
+    it('should pass clone options to git command', async () => {
       const repo = new Repository(cloneDir, remoteUrl, { clone: { depth: 1 } });
 
-      repo.update(function(err) {
-        expect(err).to.not.exist;
+      await repo.update();
+      const log = await repo.log();
 
-        repo.log((err, log) => {
-          expect(err).to.not.exist;
-
-          expect(log.length).to.equal(1);
-          next();
-        });
-      });
+      expect(log.length).to.equal(1);
     });
   });
 
   describe('visit', function() {
-    it('should clone the repo if the repo does not exist', function(next) {
+    it('should clone the repo if the repo does not exist', async () => {
       const visitor = {
-        counter : 0,
-        visit : function(repo, commit, cb) {
-          this.counter ++;
-          cb();
+        counter: 0,
+        visit: function(repo, commit) {
+          this.counter++;
         }
       };
 
       const repo = new Repository(cloneDir, remoteUrl);
-      repo.visit(visitor, function(err) {
-        expect(err).to.not.exist;
-        expect(visitor.counter).to.equal(5);
+      await repo.visit(visitor);
 
-        next();
-      });
+      expect(visitor.counter).to.equal(5);
     });
 
-    it('should add first and last flags to commits', function(next) {
+    it('should add first and last flags to commits', async () => {
       const visitor = {
-        commits : [],
-        visit : function(repo, commit, cb) {
+        commits: [],
+        visit: function(repo, commit) {
           this.commits.push(commit);
-
-          cb();
         }
       };
 
       const repo = new Repository(cloneDir, remoteUrl);
-      repo.visit(visitor, function(err) {
-        expect(err).to.not.exist;
-        expect(visitor.commits[0].isFirst).to.equal(true);
-        expect(visitor.commits[visitor.commits.length - 1].isLast).to.equal(true);
+      await repo.visit(visitor);
 
-        next();
-      });
+      expect(visitor.commits[0].isFirst).to.equal(true);
+      expect(visitor.commits[visitor.commits.length - 1].isLast).to.equal(true);
     });
   });
-});
+})
+;

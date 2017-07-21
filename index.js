@@ -1,217 +1,198 @@
 const childProcess = require('child_process');
 const opted = require('opted');
-const fs = require('fs');
+const fs = require('fs-extra');
 
 const parse = require('./parse');
-const async = require('async');
 const ssh = require('./lib/ssh');
 
 const debug = require('debug')('git-visit');
 
-function Repository(path, url, options) {
-  options = options || {};
-  options.executable = options.executable || 'git';
-  options.maxBufferForLog = options.maxBufferForLog || 40 * 1024 * 1024; // 40 MB;
-  options.maxBufferForShow = options.maxBufferForShow ||10 * 1024 * 1024; // 10MB;
+class Repository {
+  constructor(path, url, options) {
+    options = options || {};
+    options.executable = options.executable || 'git';
+    options.maxBufferForLog = options.maxBufferForLog || 40 * 1024 * 1024; // 40 MB;
+    options.maxBufferForShow = options.maxBufferForShow || 10 * 1024 * 1024; // 10MB;
 
-  options.defaultBranch = options.defaultBranch || 'master';
+    options.defaultBranch = options.defaultBranch || 'master';
 
-  options.clone = options.clone || {};
-  options.pull = options.pull || {};
+    options.clone = options.clone || {};
+    options.pull = options.pull || {};
 
-  this.options = options;
+    this.options = options;
 
-  this.path = path;
-  this.url = url;
-}
+    this.path = path;
+    this.url = url;
+  }
 
-Repository.prototype.update = function(cb) {
-  fs.exists(this.path, (exists) => {
+  async update() {
+    const exists = await fs.exists(this.path);
+
     if (exists) {
       debug('Destination path %s exists. Pulling...', this.path);
-      this.pull(cb);
+      await this.pull();
     } else {
       debug('Destination path %s does not exist. Cloning...', this.path);
-      this.clone(cb);
+      await this.clone();
     }
-  });
-};
+  }
 
-Repository.prototype.clone = function(cb) {
-  const additionalOptions = opted(this.options.clone).join(' ');
+  async clone() {
+    const additionalOptions = opted(this.options.clone).join(' ');
 
-  this._gitCommand(`${this.options.executable} clone ${additionalOptions} ${this.url} ${this.path}`, {}, cb);
-};
+    await this._gitCommand(`${this.options.executable} clone ${additionalOptions} ${this.url} ${this.path}`, {});
+  }
 
-Repository.prototype.pull = function(cb) {
-  // Assure to be on a branch to avoid detached working copies
-  this.checkout(this.options.defaultBranch, (err) => {
-    if (err) { return cb(err); }
+  async pull() {
+    // Assure to be on a branch to avoid detached working copies
+    await this.checkout(this.options.defaultBranch);
 
     const additionalOptions = opted(this.options.pull).join(' ');
 
-    this._gitCommand(`${this.options.executable} pull ${additionalOptions} `, { cwd: this.path}, cb);
-  });
-};
+    await this._gitCommand(`${this.options.executable} pull ${additionalOptions} `, { cwd: this.path }, cb);
+  }
 
-Repository.prototype._gitCommand = function(gitCommand, options, cb) {
-  if (this.options.privateKey) {
-    debug('Private key provided. Using SSH command to execute git command %s', gitCommand);
+  async _gitCommand(gitCommand, options) {
+    if (this.options.privateKey) {
+      debug('Private key provided. Using SSH command to execute git command %s', gitCommand);
 
-    return ssh(this.options.privateKey,
-      function(err, script, next) {
-        if (err) { return cb(err); }
-
+      return await ssh(this.options.privateKey, async (script) => {
         options = options || {};
         options.env = options.env || {};
         options.env.GIT_SSH = script;
 
-        exec(gitCommand, options, next);
-      }, cb);
+        return await exec(gitCommand, options);
+      });
+    }
+
+    return await exec(gitCommand, options);
   }
 
-  exec(gitCommand, options, cb);
-};
+  async log() {
+    const { stdout } = await exec(`${this.options.executable} --no-pager log --name-status --no-merges --pretty=fuller`,
+      {
+        cwd: this.path,
+        maxBuffer: this.options.maxBufferForLog
+      });
 
-Repository.prototype.log = function(cb) {
-  exec(`${this.options.executable} --no-pager log --name-status --no-merges --pretty=fuller`,
-    {
-      cwd: this.path,
-      maxBuffer : this.options.maxBufferForLog
-    }, function(err, stdout) {
-      if (err) { return cb(err); }
+    return parse(stdout.toString('utf-8'));
+  }
 
-      try {
-        const commits = parse(stdout.toString('utf-8'));
-        return cb(null, commits);
-      } catch (err) {
-        return cb(err);
-      }
-    });
-};
+  async checkout(ref) {
+    await exec(`${this.options.executable} checkout -qf ${ref}`, { cwd: this.path });
+  }
 
-Repository.prototype.checkout = function(ref, cb) {
-  exec(`${this.options.executable} checkout -qf ${ref}`, {cwd: this.path}, cb);
-};
+  async unmodify() {
+    await exec(`${this.options.executable} checkout -qf -- .`, { cwd: this.path });
+  }
 
-Repository.prototype.unmodify = function(cb) {
-  exec(`${this.options.executable} checkout -qf -- .`, {cwd: this.path}, cb);
-};
+  async initialCommit() {
+    const { stdout } = await exec(`${this.options.executable} rev-list --max-parents=0 HEAD`, { cwd: this.path });
 
-Repository.prototype.initialCommit = function(cb) {
-  exec(`${this.options.executable} rev-list --max-parents=0 HEAD`, {cwd: this.path}, function(err, stdout) {
-    if (err) { return cb(err); }
 
     const output = stdout.toString('utf-8');
     const match = output.match(/[0-9a-f]*/);
 
     if (!match.length > 0) {
-      return cb(new Error('Could not get initial commit from rev-list'));
+      throw new Error('Could not get initial commit from rev-list');
     }
 
-    return cb(null, match[0]);
-  });
-};
+    return match[0];
+  }
 
-Repository.prototype.diff = function(leftRev, rightRev, cb) {
-  exec(`${this.options.executable} --no-pager diff --numstat ${leftRev} ${rightRev}`, {cwd: this.path}, function(err, stdout) {
-    if (err) { return cb(err); }
+  async diff(leftRev, rightRev) {
+    const { stdout } = await exec(`${this.options.executable} --no-pager diff --numstat ${leftRev} ${rightRev}`, { cwd: this.path });
+
+    const out = stdout.toString('utf-8');
+    // see: http://www.unicode.org/reports/tr18/#Line_Boundaries
+    const lines = out.split(/\r\n|[\n\v\f\r\x85\u2028\u2029]/g);
+
+    return lines.map(function(line) {
+      const match = line.match(/(\d+)\s+(\d+)\s+(.+)/i);
+
+      if (!match) {
+        return;
+      }
+
+      return { added: parseInt(match[1], 10), deleted: parseInt(match[2], 10), path: match[3] };
+    }).filter(diff => diff);
+  }
+
+  async show(file, rev) {
+    const { stdout } = await exec(`${this.options.executable} --no-pager show ${rev}:${file}`, {
+      cwd: this.path,
+      maxBuffer: this.options.maxBufferForShow
+    });
+
+    return stdout.toString('utf-8');
+  }
+
+  async visit(visitor) {
+    visitor = visitor || {};
+    visitor.test = visitor.test || function() { return true; };
+    visitor.visit = visitor.visit || function(cb) { return cb(); };
+    visitor.init = visitor.init || function() { };
 
     try {
-      const out = stdout.toString('utf-8');
-      // see: http://www.unicode.org/reports/tr18/#Line_Boundaries
-      const lines = out.split(/\r\n|[\n\v\f\r\x85\u2028\u2029]/g);
-
-      const diffs = lines.map(function(line) {
-        const match = line.match(/(\d+)\s+(\d+)\s+(.+)/i);
-
-        if (!match) {
-           return;
-        }
-
-        return { added: parseInt(match[1], 10), deleted : parseInt(match[2], 10), path : match[3] };
-      }).filter(diff => diff);
-
-      return cb(null, diffs);
-    } catch (err) {
-      return cb(err);
-    }
-  });
-};
-
-Repository.prototype.show = function(file, rev, cb) {
-  exec(`${this.options.executable} --no-pager show ${rev}:${file}`, {
-      cwd: this.path ,
-      maxBuffer : this.options.maxBufferForShow
-    }, function(err, stdout) {
-      if (err) { return cb(err); }
-
-      try {
-        return cb(null, stdout.toString('utf-8'));
-      } catch (err) {
-        return cb(err);
-      }
-    });
-};
-
-Repository.prototype.visit = function(visitor, cb) {
-  visitor = visitor || {};
-  visitor.test = visitor.test || function() { return true; };
-  visitor.visit = visitor.visit || function(cb) { return cb(); };
-  visitor.init = visitor.init || function() { };
-
-  this.update((err) => {
-    if (err) {
-      debug('Could not update repository due to error %s', err);
-      return cb(err);
+      await this.update();
+    } catch (e) {
+      debug('Could not update repository due to error %s', e);
+      throw e;
     }
 
-    this.log((err, commits) => {
-      if (err) {
-        debug('Could not get a log for repository due to error %s', err);
-        return cb(err);
+    let commits = null;
+
+    try {
+      commits = await this.log();
+    } catch (e) {
+      debug('Could not get a log for repository due to error %s', e);
+      throw e;
+    }
+
+    const commitsToVisit = commits.filter(visitor.test);
+
+    visitor.init(this, commitsToVisit);
+
+    if (commitsToVisit.length > 0) {
+      commitsToVisit[0].isFirst = true;
+      commitsToVisit[commits.length - 1].isLast = true;
+    }
+
+    const results = [];
+
+    try {
+      for (const commit of commitsToVisit) {
+
+        await this.unmodify();
+
+
+        await this.checkout(commit.hash);
+        results.push(await visitor.visit(this, commit));
       }
+    } catch (e) {
+      await this._cleanupCheckout();
 
-      const commitsToVisit = commits.filter(visitor.test);
+      throw e;
+    }
 
-      visitor.init(this, commits);
+    return results;
+  }
 
-      if (commits.length > 0) {
-        commits[0].isFirst = true;
-        commits[commits.length - 1].isLast = true;
-      }
+  async _cleanupCheckout() {
+    await this.checkout(this.options.defaultBranch);
+  }
+}
 
-      async.mapSeries(commitsToVisit, (commit, cb) => {
-        this.unmodify((err) => {
-          if (err) {
-            return this._cleanupCheckout(cb, err);
-          }
-
-          this.checkout(commit.hash, (err) => {
-            if (err) {
-              return this._cleanupCheckout(cb, err);
-            }
-
-            visitor.visit(this, commit, cb);
-          });
-        });
-      }, (err, results) => {
-        this._cleanupCheckout(cb, err, results);
-      });
-    });
-  });
-};
-
-Repository.prototype._cleanupCheckout = function(cb, err, results) {
-  this.checkout(this.options.defaultBranch, function() { // TODO: Deal with this error too!
-    cb(err, results);
-  });
-};
-
-function exec(cmd, options, cb) {
+function exec(cmd, options) {
   debug('Executing command %s', cmd);
 
-  childProcess.exec(cmd, options, wrapExecError(cb));
+  return new Promise((resolve, reject) => {
+    childProcess.exec(cmd, options, wrapExecError((err, result) => {
+     if (err) { return reject(err); }
+
+     resolve(result);
+    }));
+  });
 }
 
 function wrapExecError(cb) {
@@ -221,7 +202,7 @@ function wrapExecError(cb) {
       err.stderr = stderr.toString();
     }
 
-    cb(err, stdout, stderr);
+    cb(err, { stdout, stderr });
   }
 }
 
