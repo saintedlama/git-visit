@@ -49,7 +49,7 @@ class Repository {
 
     const additionalOptions = opted(this.options.pull).join(' ');
 
-    await this._gitCommand(`${this.options.executable} pull ${additionalOptions} `, { cwd: this.path }, cb);
+    await this._gitCommand(`${this.options.executable} pull ${additionalOptions} `, { cwd: this.path });
   }
 
   async _gitCommand(gitCommand, options) {
