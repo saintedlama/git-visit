@@ -130,7 +130,7 @@ class Repository {
   async visit(visitor) {
     visitor = visitor || {};
     visitor.test = visitor.test || function() { return true; };
-    visitor.visit = visitor.visit || function(cb) { return cb(); };
+    visitor.visit = visitor.visit || function() { };
     visitor.init = visitor.init || function() { };
 
     try {
@@ -167,7 +167,9 @@ class Repository {
 
 
         await this.checkout(commit.hash);
-        results.push(await visitor.visit(this, commit));
+        const result = await visitor.visit(this, commit);
+
+        results.push(result);
       }
     } catch (e) {
       await this._cleanupCheckout();
@@ -188,9 +190,9 @@ function exec(cmd, options) {
 
   return new Promise((resolve, reject) => {
     childProcess.exec(cmd, options, wrapExecError((err, result) => {
-     if (err) { return reject(err); }
+      if (err) { return reject(err); }
 
-     resolve(result);
+      resolve(result);
     }));
   });
 }

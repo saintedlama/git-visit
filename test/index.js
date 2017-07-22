@@ -57,7 +57,7 @@ describe('repository', function() {
     it('should clone the repo if the repo does not exist', async () => {
       const visitor = {
         counter: 0,
-        visit: function(repo, commit) {
+        visit(repo, commit) {
           this.counter++;
         }
       };
@@ -71,7 +71,7 @@ describe('repository', function() {
     it('should add first and last flags to commits', async () => {
       const visitor = {
         commits: [],
-        visit: function(repo, commit) {
+        visit(repo, commit) {
           this.commits.push(commit);
         }
       };
@@ -81,6 +81,25 @@ describe('repository', function() {
 
       expect(visitor.commits[0].isFirst).to.equal(true);
       expect(visitor.commits[visitor.commits.length - 1].isLast).to.equal(true);
+    });
+
+    it('should await async visitor', async () => {
+      const visitor = {
+        visited: false,
+        visit() {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              this.visited = true;
+              resolve();
+            }, 200)
+          });
+        }
+      };
+
+      const repo = new Repository(cloneDir, remoteUrl);
+      await repo.visit(visitor);
+
+      expect(visitor.visited).to.equal(true);
     });
   });
 })
