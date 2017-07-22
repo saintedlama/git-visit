@@ -1,6 +1,6 @@
 {
   "name": "git-visit",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Git command line wrapping library to git visit commit history",
   "main": "index.js",
   "directories": {
