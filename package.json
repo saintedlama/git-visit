@@ -9,7 +9,8 @@
   "scripts": {
     "test": "cross-env NODE_ENV=test mocha --recursive -R spec",
     "testdev": "cross-env NODE_ENV=test mocha --recursive -R spec -g endtoendtest -i",
-    "cover": "cross-env NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha --report html -- --recursive -R spec"
+    "cover": "cross-env NODE_ENV=test nyc --report=html --reporter=text mocha --recursive",
+    "coveralls": "cross-env NODE_ENV=text nyc --reporter=text-lcov mocha --recursive | coveralls"
   },
   "repository": {
     "type": "git",
@@ -32,9 +33,9 @@
     "coveralls": "^2.13.1",
     "cross-env": "^5.0.1",
     "file-url": "^2.0.2",
-    "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "mocha-lcov-reporter": "^1.3.0",
+    "nyc": "^11.0.3",
     "rimraf": "^2.6.1",
     "shelljs": "^0.7.8"
   }
