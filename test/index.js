@@ -5,8 +5,6 @@ const fileUrl = require('file-url');
 const expect = require('chai').expect;
 const Repository = require('../');
 
-const debug = require('debug')('git-visit');
-
 const remoteUrl = fileUrl(path.join(__dirname, 'fixtures', 'repo'));
 const cloneDir = path.join(__dirname, '..', 'test_tmp');
 
@@ -32,7 +30,7 @@ describe('repository', function() {
       const repo = new Repository(cloneDir, remoteUrl);
 
       await repo.update();
-      const hash = await repo.initialCommit()
+      const hash = await repo.initialCommit();
       const diffs = await repo.diff(hash, 'HEAD');
 
       expect(diffs).to.exist;
@@ -57,7 +55,7 @@ describe('repository', function() {
     it('should clone the repo if the repo does not exist', async () => {
       const visitor = {
         counter: 0,
-        visit(repo, commit) {
+        visit() {
           this.counter++;
         }
       };
@@ -91,7 +89,7 @@ describe('repository', function() {
             setTimeout(() => {
               this.visited = true;
               resolve();
-            }, 200)
+            }, 200);
           });
         }
       };

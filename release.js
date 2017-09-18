@@ -1,5 +1,6 @@
 const shell = require('shelljs');
 
+/* eslint-disable no-console */
 if (exec('git status --porcelain').stdout != '') {
   console.error('Git working directory not clean.');
   process.exit(2);
@@ -18,16 +19,16 @@ exec('npm version ' + versionIncrement);
 console.log(`done npm version ${versionIncrement}`);
 
 exec('npm test');
-console.log(`done npm test`);
+console.log('done npm test');
 
 exec('git push');
-console.log(`done git push`);
+console.log('done git push');
 
 exec('git push --tags');
-console.log(`done git push --tags`);
+console.log('done git push --tags');
 
 exec('npm publish');
-console.log(`Package releases successfully`);
+console.log('Package releases successfully');
 
 function exec(cmd) {
   const ret = shell.exec(cmd, { silent : true });

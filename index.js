@@ -2,7 +2,7 @@ const childProcess = require('child_process');
 const opted = require('opted');
 const fs = require('fs-extra');
 
-const parse = require('./parse');
+const parse = require('./lib/parse');
 const ssh = require('./lib/ssh');
 
 const debug = require('debug')('git-visit');
@@ -205,7 +205,7 @@ function wrapExecError(cb) {
     }
 
     cb(err, { stdout, stderr });
-  }
+  };
 }
 
 module.exports = Repository;
