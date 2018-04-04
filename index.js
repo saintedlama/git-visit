@@ -4,6 +4,7 @@ const fs = require('fs-extra');
 
 const parse = require('./lib/parse');
 const ssh = require('./lib/ssh');
+const { Diff2Html } = require('diff2html');
 
 const debug = require('debug')('git-visit');
 
@@ -100,7 +101,23 @@ class Repository {
     return match[0];
   }
 
-  async diff(leftRev, rightRev) {
+  async diff(leftRev, rightRev, options) {
+    options = options || {};
+    options.output = options.output || 'json';
+
+    const { stdout } = await exec(`${this.options.executable} --no-pager diff ${toCLIArgument(leftRev)} ${toCLIArgument(rightRev)}`, { cwd: this.path });
+
+    const out = stdout.toString('utf-8');
+
+    switch (options.output) {
+      case 'html': return Diff2Html.getPrettyHtml(out, options);
+      case 'raw': return out;
+      default:
+        return Diff2Html.getJsonFromDiff(out, options);
+    }
+  }
+
+  async diffStat(leftRev, rightRev) {
     const { stdout } = await exec(`${this.options.executable} --no-pager diff --numstat ${leftRev} ${rightRev}`, { cwd: this.path });
 
     const out = stdout.toString('utf-8');
@@ -206,6 +223,18 @@ function wrapExecError(cb) {
 
     cb(err, { stdout, stderr });
   };
+}
+
+function toCLIArgument(arg) {
+  if (arg === undefined || arg === null) {
+    return '';
+  }
+
+  if (process.platform == 'win32') {
+    return `"${arg}"`;
+  }
+
+  return arg;
 }
 
 module.exports = Repository;

@@ -21,6 +21,7 @@
   "homepage": "https://github.com/saintedlama/git-visit",
   "dependencies": {
     "debug": "^2.6.8",
+    "diff2html": "^2.3.3",
     "fs-extra": "^4.0.0",
     "opted": "^1.0.2",
     "trim-left": "^1.0.1"

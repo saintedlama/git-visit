@@ -25,19 +25,55 @@ describe('repository', function() {
     });
   });
 
-  describe('diff', function() {
+  describe('diffStat', function() {
     it('should get a parsed git diff numstat', async () => {
       const repo = new Repository(cloneDir, remoteUrl);
 
       await repo.update();
       const hash = await repo.initialCommit();
-      const diffs = await repo.diff(hash, 'HEAD');
+      const diffs = await repo.diffStat(hash, 'HEAD');
 
       expect(diffs).to.exist;
       expect(diffs[0].path).to.equal('README.md');
       expect(diffs[0].added).to.equal(7);
       expect(diffs[0].deleted).to.equal(0);
     });
+  });
+
+  describe('diff', function() {
+    async function arrange() {
+      const repo = new Repository(cloneDir, remoteUrl);
+
+      await repo.update();
+      const hash = await repo.initialCommit();
+
+      return { repo, hash };
+    }
+
+    it('should get a parsed git source diff', async () => {
+      const {repo, hash} = await arrange();
+      const diffs = await repo.diff(hash, 'HEAD');
+
+      expect(diffs).to.have.length(1);
+      expect(diffs[0].addedLines).to.equal(7);
+      expect(diffs[0].deletedLines).to.equal(0);
+    });
+
+    it('should get a raw string git source diff', async () => {
+      const {repo, hash} = await arrange();
+      const diffs = await repo.diff(hash, 'HEAD', { output: 'raw' });
+
+      expect(diffs).to.be.a('string');
+      expect(diffs).to.not.contain('<div class="d2h-wrapper">');
+    });
+
+    it('should get a html string git source diff', async () => {
+      const {repo, hash} = await arrange();
+      const diffs = await repo.diff(hash, 'HEAD', { output: 'html' });
+
+      expect(diffs).to.be.a('string');
+      expect(diffs).to.contain('<div class="d2h-wrapper">');
+    });    
   });
 
   describe('update', function() {
