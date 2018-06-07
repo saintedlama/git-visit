@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.1.0"></a>
+# [4.1.0](https://github.com/saintedlama/git-visit/compare/v4.0.0...v4.1.0) (2018-06-07)
+
+
+### Bug Fixes
+
+* update dependencies to fix security vulnerabilities ([50e502e](https://github.com/saintedlama/git-visit/commit/50e502e))
+* update fs-extra dependency ([3bf5bc4](https://github.com/saintedlama/git-visit/commit/3bf5bc4))
+
+
+### Features
+
+* add directory option to log function ([80a6bac](https://github.com/saintedlama/git-visit/commit/80a6bac))
+
+
+
 <a name="4.0.0"></a>
 # [4.0.0](https://github.com/saintedlama/git-visit/compare/v3.1.0...v4.0.0) (2018-04-04)
 
