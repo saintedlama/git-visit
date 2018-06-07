@@ -69,8 +69,8 @@ class Repository {
     return await exec(gitCommand, options);
   }
 
-  async log() {
-    const { stdout } = await exec(`${this.options.executable} --no-pager log --name-status --no-merges --pretty=fuller`,
+  async log(dir) {
+    const { stdout } = await exec(`${this.options.executable} --no-pager log --name-status --no-merges --pretty=fuller ${toCLIArgument(dir)}`,
       {
         cwd: this.path,
         maxBuffer: this.options.maxBufferForLog
