@@ -23,7 +23,7 @@
   "dependencies": {
     "debug": "^3.1.0",
     "diff2html": "^2.3.3",
-    "fs-extra": "^4.0.0",
+    "fs-extra": "^6.0.1",
     "opted": "^1.0.2",
     "trim-left": "^1.0.1"
   },
