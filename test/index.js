@@ -1,3 +1,4 @@
+const os = require('os');
 const path = require('path');
 const fs = require('fs-extra');
 const fileUrl = require('file-url');
@@ -84,6 +85,42 @@ describe('repository', function() {
       const log = await repo.log();
 
       expect(log.length).to.equal(1);
+    });
+  });
+
+  describe('security (command injection)', function() {
+    it('should not execute injected shell commands in checkout ref', async () => {
+      const tempFile = path.join(os.tmpdir(), `gitvisit-inject-checkout-${Date.now()}.txt`);
+      await fs.remove(tempFile);
+
+      const repo = new Repository(cloneDir, remoteUrl);
+      await repo.update();
+
+      try {
+        await repo.checkout(`x; touch ${tempFile}`);
+      } catch (e) {
+        // Expected: git will reject the invalid ref
+      }
+
+      expect(await fs.exists(tempFile)).to.equal(false, 'Injected shell command must not be executed');
+      await fs.remove(tempFile);
+    });
+
+    it('should not execute injected shell commands in show rev', async () => {
+      const tempFile = path.join(os.tmpdir(), `gitvisit-inject-show-${Date.now()}.txt`);
+      await fs.remove(tempFile);
+
+      const repo = new Repository(cloneDir, remoteUrl);
+      await repo.update();
+
+      try {
+        await repo.show('README.md', `HEAD; touch ${tempFile}`);
+      } catch (e) {
+        // Expected: git will reject the malformed rev
+      }
+
+      expect(await fs.exists(tempFile)).to.equal(false, 'Injected shell command must not be executed');
+      await fs.remove(tempFile);
     });
   });
 

@@ -39,57 +39,58 @@ class Repository {
   }
 
   async clone() {
-    const additionalOptions = opted(this.options.clone).join(' ');
-
-    await this._gitCommand(`${this.options.executable} clone ${additionalOptions} ${this.url} ${this.path}`, {});
+    const args = ['clone', ...opted(this.options.clone), this.url, this.path];
+    await this._gitCommand(args, {});
   }
 
   async pull() {
     // Assure to be on a branch to avoid detached working copies
     await this.checkout(this.options.defaultBranch);
 
-    const additionalOptions = opted(this.options.pull).join(' ');
-
-    await this._gitCommand(`${this.options.executable} pull ${additionalOptions} `, { cwd: this.path });
+    const args = ['pull', ...opted(this.options.pull)];
+    await this._gitCommand(args, { cwd: this.path });
   }
 
-  async _gitCommand(gitCommand, options) {
+  async _gitCommand(args, options) {
     if (this.options.privateKey) {
-      debug('Private key provided. Using SSH command to execute git command %s', gitCommand);
+      debug('Private key provided. Using SSH command to execute git command %o', args);
 
       return await ssh(this.options.privateKey, async (script) => {
         options = options || {};
         options.env = options.env || {};
         options.env.GIT_SSH = script;
 
-        return await exec(gitCommand, options);
+        return await execFile(this.options.executable, args, options);
       });
     }
 
-    return await exec(gitCommand, options);
+    return await execFile(this.options.executable, args, options);
   }
 
   async log(dir) {
-    const { stdout } = await exec(`${this.options.executable} --no-pager log --name-status --no-merges --pretty=fuller ${toCLIArgument(dir)}`,
-      {
-        cwd: this.path,
-        maxBuffer: this.options.maxBufferForLog
-      });
+    const args = ['--no-pager', 'log', '--name-status', '--no-merges', '--pretty=fuller'];
+    if (dir != null) {
+      args.push(dir);
+    }
+
+    const { stdout } = await execFile(this.options.executable, args, {
+      cwd: this.path,
+      maxBuffer: this.options.maxBufferForLog
+    });
 
     return parse(stdout.toString('utf-8'));
   }
 
   async checkout(ref) {
-    await exec(`${this.options.executable} checkout -qf ${ref}`, { cwd: this.path });
+    await execFile(this.options.executable, ['checkout', '-qf', ref], { cwd: this.path });
   }
 
   async unmodify() {
-    await exec(`${this.options.executable} checkout -qf -- .`, { cwd: this.path });
+    await execFile(this.options.executable, ['checkout', '-qf', '--', '.'], { cwd: this.path });
   }
 
   async initialCommit() {
-    const { stdout } = await exec(`${this.options.executable} rev-list --max-parents=0 HEAD`, { cwd: this.path });
-
+    const { stdout } = await execFile(this.options.executable, ['rev-list', '--max-parents=0', 'HEAD'], { cwd: this.path });
 
     const output = stdout.toString('utf-8');
     const match = output.match(/[0-9a-f]*/);
@@ -105,7 +106,11 @@ class Repository {
     options = options || {};
     options.output = options.output || 'json';
 
-    const { stdout } = await exec(`${this.options.executable} --no-pager diff ${toCLIArgument(leftRev)} ${toCLIArgument(rightRev)}`, { cwd: this.path });
+    const args = ['--no-pager', 'diff'];
+    if (leftRev != null) { args.push(leftRev); }
+    if (rightRev != null) { args.push(rightRev); }
+
+    const { stdout } = await execFile(this.options.executable, args, { cwd: this.path });
 
     const out = stdout.toString('utf-8');
 
@@ -118,7 +123,11 @@ class Repository {
   }
 
   async diffStat(leftRev, rightRev) {
-    const { stdout } = await exec(`${this.options.executable} --no-pager diff --numstat ${leftRev} ${rightRev}`, { cwd: this.path });
+    const args = ['--no-pager', 'diff', '--numstat'];
+    if (leftRev != null) { args.push(leftRev); }
+    if (rightRev != null) { args.push(rightRev); }
+
+    const { stdout } = await execFile(this.options.executable, args, { cwd: this.path });
 
     const out = stdout.toString('utf-8');
     // see: http://www.unicode.org/reports/tr18/#Line_Boundaries
@@ -136,7 +145,7 @@ class Repository {
   }
 
   async show(file, rev) {
-    const { stdout } = await exec(`${this.options.executable} --no-pager show ${rev}:${file}`, {
+    const { stdout } = await execFile(this.options.executable, ['--no-pager', 'show', `${rev}:${file}`], {
       cwd: this.path,
       maxBuffer: this.options.maxBufferForShow
     });
@@ -202,11 +211,11 @@ class Repository {
   }
 }
 
-function exec(cmd, options) {
-  debug('Executing command %s', cmd);
+function execFile(file, args, options) {
+  debug('Executing command %s %o', file, args);
 
   return new Promise((resolve, reject) => {
-    childProcess.exec(cmd, options, wrapExecError((err, result) => {
+    childProcess.execFile(file, args, options, wrapExecError((err, result) => {
       if (err) { return reject(err); }
 
       resolve(result);
@@ -223,18 +232,6 @@ function wrapExecError(cb) {
 
     cb(err, { stdout, stderr });
   };
-}
-
-function toCLIArgument(arg) {
-  if (arg === undefined || arg === null) {
-    return '';
-  }
-
-  if (process.platform == 'win32') {
-    return `"${arg}"`;
-  }
-
-  return arg;
 }
 
 module.exports = Repository;
