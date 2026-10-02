@@ -4,6 +4,9 @@
 # Logs
 logs/
 
+# Build artifacts
+dist/
+
 # Coverage directory used by tools like istanbul
 coverage/
 .nyc_output/
