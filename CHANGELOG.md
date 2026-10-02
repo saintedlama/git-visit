@@ -35,6 +35,17 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## Change Log
 
+## [5.0.0](https://github.com/saintedlama/git-visit/compare/v4.1.0...v5.0.0) (2026-10-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* rewrite in typescript, update dependencies, prune dependencies, add publishing workflows ([#77](https://github.com/saintedlama/git-visit/issues/77))
+
+### Features
+
+* rewrite in typescript, update dependencies, prune dependencies, add publishing workflows ([#77](https://github.com/saintedlama/git-visit/issues/77)) ([62b4e77](https://github.com/saintedlama/git-visit/commit/62b4e77cfc699844711fb1504f0d0791cb9fd3bc))
+
 ### v2.3.0 (2017/03/22 08:27 +00:00)
 - [46b1466](https://github.com/saintedlama/git-visit/commit/46b146661f4825327065159c07684ed67d8c78da) 2.3.0 (@saintedlama)
 
