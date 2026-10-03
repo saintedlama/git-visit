@@ -9,6 +9,7 @@ export interface RepositoryOptions {
   clone?: Record<string, unknown>;
   pull?: Record<string, unknown>;
   privateKey?: string | null;
+  disableSymlinks?: boolean;
 }
 
 export interface CommitAuthor {

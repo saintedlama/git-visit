@@ -24,6 +24,7 @@ export class Repository {
     defaultBranch: string;
     clone: Record<string, unknown>;
     pull: Record<string, unknown>;
+    disableSymlinks: boolean;
   };
   path: string;
   url: string;
@@ -44,7 +45,8 @@ export class Repository {
       maxBufferForShow: opts.maxBufferForShow || 10 * 1024 * 1024,
       defaultBranch: opts.defaultBranch || 'master',
       clone: opts.clone || {},
-      pull: opts.pull || {}
+      pull: opts.pull || {},
+      disableSymlinks: opts.disableSymlinks !== false
     };
 
     if (!this.options.defaultBranch || typeof this.options.defaultBranch !== 'string' || this.options.defaultBranch.startsWith('-')) {
@@ -67,9 +69,17 @@ export class Repository {
     }
   }
 
+  _withSymlinkConfig(args: string[]): string[] {
+    if (this.options.disableSymlinks) {
+      return ['-c', 'core.symlinks=false', ...args];
+    }
+    return args;
+  }
+
   async clone(): Promise<void> {
     const additionalOptions = optionsToArgs(this.options.clone);
-    const args = ['clone', ...additionalOptions, '--', this.url, this.path];
+    const symlinkArgs = this.options.disableSymlinks ? ['-c', 'core.symlinks=false'] : [];
+    const args = ['clone', ...symlinkArgs, ...additionalOptions, '--', this.url, this.path];
 
     await this._gitCommand(args, {});
   }
@@ -80,7 +90,7 @@ export class Repository {
     // Assure to be on a branch to avoid detached working copies
     await this.checkout(this.options.defaultBranch);
 
-    const args = ['pull', ...additionalOptions];
+    const args = this._withSymlinkConfig(['pull', ...additionalOptions]);
 
     await this._gitCommand(args, { cwd: this.path });
   }
@@ -139,17 +149,21 @@ export class Repository {
       throw new Error(`Invalid git ref: ${ref}`);
     }
 
+    const args = this._withSymlinkConfig(['checkout', '-qf', '--end-of-options', ref]);
+
     await execFileAsync(
       this.options.executable,
-      ['checkout', '-qf', '--end-of-options', ref],
+      args,
       { cwd: this.path }
     );
   }
 
   async unmodify(): Promise<void> {
+    const args = this._withSymlinkConfig(['checkout', '-qf', '--', '.']);
+
     await execFileAsync(
       this.options.executable,
-      ['checkout', '-qf', '--', '.'],
+      args,
       { cwd: this.path }
     );
   }

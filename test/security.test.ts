@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import fs from 'node:fs/promises';
+import childProcess from 'node:child_process';
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import Repository from '../src/index';
 
@@ -107,6 +108,28 @@ describe('security hardening', { timeout: 15000 }, () => {
 
       await expect(repo.log('../../other')).rejects.toThrow(/Invalid directory path/);
       await expect(repo.log(path.resolve('/'))).rejects.toThrow(/Invalid directory path/);
+    });
+
+    it('should disable symlinks by default in clone config to prevent symlink traversal', async () => {
+      const repo = new Repository(cloneDir, remoteUrl);
+      expect(repo.options.disableSymlinks).to.be.true;
+
+      await repo.update();
+
+      const { stdout } = await new Promise<{ stdout: string }>((resolve, reject) => {
+        childProcess.execFile('git', ['-C', cloneDir, 'config', '--get', 'core.symlinks'], (err, stdout) => {
+          if (err) return reject(err);
+          resolve({ stdout: stdout.trim() });
+        });
+      });
+
+      expect(stdout).to.equal('false');
+    });
+
+    it('should allow enabling symlinks if explicitly configured with disableSymlinks: false', () => {
+      const repo = new Repository(cloneDir, remoteUrl, { disableSymlinks: false });
+      expect(repo.options.disableSymlinks).to.be.false;
+      expect(repo._withSymlinkConfig(['checkout', 'HEAD'])).to.deep.equal(['checkout', 'HEAD']);
     });
   });
 });
