@@ -35,6 +35,13 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## Change Log
 
+## [5.0.1](https://github.com/saintedlama/git-visit/compare/v5.0.0...v5.0.1) (2026-10-03)
+
+
+### Bug Fixes
+
+* harden security ([#79](https://github.com/saintedlama/git-visit/issues/79)) ([9366125](https://github.com/saintedlama/git-visit/commit/9366125f29c8152e8254714cdc235d35b89bceda))
+
 ## [5.0.0](https://github.com/saintedlama/git-visit/compare/v4.1.0...v5.0.0) (2026-10-02)
 
 
