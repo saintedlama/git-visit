@@ -1,4 +1,5 @@
-import childProcess, { ExecOptions, ExecException } from 'node:child_process';
+import childProcess, { ExecFileOptions, ExecFileException } from 'node:child_process';
+import nodePath from 'node:path';
 import fs from 'node:fs';
 import createDebug from 'debug';
 import parseDiff from 'parse-diff';
@@ -23,11 +24,19 @@ export class Repository {
     defaultBranch: string;
     clone: Record<string, unknown>;
     pull: Record<string, unknown>;
+    disableSymlinks: boolean;
   };
   path: string;
   url: string;
 
   constructor(path: string, url: string, options?: RepositoryOptions) {
+    if (!path || typeof path !== 'string') {
+      throw new Error('Path must be a non-empty string');
+    }
+    if (!url || typeof url !== 'string') {
+      throw new Error('URL must be a non-empty string');
+    }
+
     const opts = options || {};
     this.options = {
       ...opts,
@@ -36,10 +45,15 @@ export class Repository {
       maxBufferForShow: opts.maxBufferForShow || 10 * 1024 * 1024,
       defaultBranch: opts.defaultBranch || 'master',
       clone: opts.clone || {},
-      pull: opts.pull || {}
+      pull: opts.pull || {},
+      disableSymlinks: opts.disableSymlinks !== false
     };
 
-    this.path = path;
+    if (!this.options.defaultBranch || typeof this.options.defaultBranch !== 'string' || this.options.defaultBranch.startsWith('-')) {
+      throw new Error(`Invalid default branch: ${this.options.defaultBranch}`);
+    }
+
+    this.path = nodePath.resolve(path);
     this.url = url;
   }
 
@@ -55,46 +69,72 @@ export class Repository {
     }
   }
 
-  async clone(): Promise<void> {
-    const additionalOptions = stringifyOptions(this.options.clone);
-    const cmd = [this.options.executable, 'clone', additionalOptions, this.url, this.path]
-      .filter(Boolean)
-      .join(' ');
+  _withSymlinkConfig(args: string[]): string[] {
+    if (this.options.disableSymlinks) {
+      return ['-c', 'core.symlinks=false', ...args];
+    }
+    return args;
+  }
 
-    await this._gitCommand(cmd, {});
+  async clone(): Promise<void> {
+    const additionalOptions = optionsToArgs(this.options.clone);
+    const symlinkArgs = this.options.disableSymlinks ? ['-c', 'core.symlinks=false'] : [];
+    const args = ['clone', ...symlinkArgs, ...additionalOptions, '--', this.url, this.path];
+
+    await this._gitCommand(args, {});
   }
 
   async pull(): Promise<void> {
+    const additionalOptions = optionsToArgs(this.options.pull);
+
     // Assure to be on a branch to avoid detached working copies
     await this.checkout(this.options.defaultBranch);
 
-    const additionalOptions = stringifyOptions(this.options.pull);
-    const cmd = [this.options.executable, 'pull', additionalOptions]
-      .filter(Boolean)
-      .join(' ');
+    const args = this._withSymlinkConfig(['pull', ...additionalOptions]);
 
-    await this._gitCommand(cmd, { cwd: this.path });
+    await this._gitCommand(args, { cwd: this.path });
   }
 
-  async _gitCommand(gitCommand: string, options: ExecOptions): Promise<{ stdout: string | Buffer; stderr: string | Buffer }> {
+  async _gitCommand(
+    gitArgsOrCommand: string[] | string,
+    options: ExecFileOptions = {}
+  ): Promise<{ stdout: string | Buffer; stderr: string | Buffer }> {
+    let args: string[];
+    if (Array.isArray(gitArgsOrCommand)) {
+      args = gitArgsOrCommand;
+    } else {
+      args = gitArgsOrCommand.split(' ').filter(Boolean);
+      if (args.length > 0 && (args[0] === this.options.executable || args[0] === 'git')) {
+        args.shift();
+      }
+    }
+
     if (this.options.privateKey) {
-      debug('Private key provided. Using SSH command to execute git command %s', gitCommand);
+      debug('Private key provided. Using SSH command to execute git command with args %o', args);
 
       return await ssh(this.options.privateKey, async (script) => {
-        const opts = { ...options };
-        opts.env = opts.env || {};
-        opts.env.GIT_SSH = script;
+        const opts: ExecFileOptions = { ...options };
+        opts.env = { ...(opts.env || process.env), GIT_SSH: script };
 
-        return await exec(gitCommand, opts);
+        return await execFileAsync(this.options.executable, args, opts);
       });
     }
 
-    return await exec(gitCommand, options);
+    return await execFileAsync(this.options.executable, args, options);
   }
 
   async log(dir?: string): Promise<Commit[]> {
-    const { stdout } = await exec(
-      `${this.options.executable} --no-pager log --name-status --no-merges --pretty=fuller ${toCLIArgument(dir)}`,
+    const args = ['--no-pager', 'log', '--name-status', '--no-merges', '--pretty=fuller'];
+    if (dir) {
+      if (typeof dir !== 'string' || nodePath.isAbsolute(dir) || nodePath.normalize(dir).startsWith('..')) {
+        throw new Error(`Invalid directory path: ${dir}`);
+      }
+      args.push('--', dir);
+    }
+
+    const { stdout } = await execFileAsync(
+      this.options.executable,
+      args,
       {
         cwd: this.path,
         maxBuffer: this.options.maxBufferForLog
@@ -105,15 +145,35 @@ export class Repository {
   }
 
   async checkout(ref: string): Promise<void> {
-    await exec(`${this.options.executable} checkout -qf ${ref}`, { cwd: this.path });
+    if (!ref || typeof ref !== 'string' || ref.startsWith('-')) {
+      throw new Error(`Invalid git ref: ${ref}`);
+    }
+
+    const args = this._withSymlinkConfig(['checkout', '-qf', '--end-of-options', ref]);
+
+    await execFileAsync(
+      this.options.executable,
+      args,
+      { cwd: this.path }
+    );
   }
 
   async unmodify(): Promise<void> {
-    await exec(`${this.options.executable} checkout -qf -- .`, { cwd: this.path });
+    const args = this._withSymlinkConfig(['checkout', '-qf', '--', '.']);
+
+    await execFileAsync(
+      this.options.executable,
+      args,
+      { cwd: this.path }
+    );
   }
 
   async initialCommit(): Promise<string> {
-    const { stdout } = await exec(`${this.options.executable} rev-list --max-parents=0 HEAD`, { cwd: this.path });
+    const { stdout } = await execFileAsync(
+      this.options.executable,
+      ['rev-list', '--max-parents=0', 'HEAD'],
+      { cwd: this.path }
+    );
 
     const output = stdout.toString('utf-8');
     const match = output.match(/[0-9a-f]*/);
@@ -132,8 +192,16 @@ export class Repository {
     const opts = options || {};
     const output = opts.output || 'json';
 
-    const { stdout } = await exec(
-      `${this.options.executable} --no-pager diff ${toCLIArgument(leftRev)} ${toCLIArgument(rightRev)}`,
+    if (!leftRev || typeof leftRev !== 'string' || leftRev.startsWith('-')) {
+      throw new Error(`Invalid left revision: ${leftRev}`);
+    }
+    if (!rightRev || typeof rightRev !== 'string' || rightRev.startsWith('-')) {
+      throw new Error(`Invalid right revision: ${rightRev}`);
+    }
+
+    const { stdout } = await execFileAsync(
+      this.options.executable,
+      ['--no-pager', 'diff', '--end-of-options', leftRev, rightRev],
       { cwd: this.path }
     );
 
@@ -154,8 +222,16 @@ export class Repository {
   }
 
   async diffStat(leftRev: string, rightRev: string): Promise<DiffStatItem[]> {
-    const { stdout } = await exec(
-      `${this.options.executable} --no-pager diff --numstat ${leftRev} ${rightRev}`,
+    if (!leftRev || typeof leftRev !== 'string' || leftRev.startsWith('-')) {
+      throw new Error(`Invalid left revision: ${leftRev}`);
+    }
+    if (!rightRev || typeof rightRev !== 'string' || rightRev.startsWith('-')) {
+      throw new Error(`Invalid right revision: ${rightRev}`);
+    }
+
+    const { stdout } = await execFileAsync(
+      this.options.executable,
+      ['--no-pager', 'diff', '--numstat', '--end-of-options', leftRev, rightRev],
       { cwd: this.path }
     );
 
@@ -178,10 +254,21 @@ export class Repository {
   }
 
   async show(file: string, rev: string): Promise<string> {
-    const { stdout } = await exec(`${this.options.executable} --no-pager show ${rev}:${file}`, {
-      cwd: this.path,
-      maxBuffer: this.options.maxBufferForShow
-    });
+    if (!rev || typeof rev !== 'string' || rev.startsWith('-')) {
+      throw new Error(`Invalid revision: ${rev}`);
+    }
+    if (!file || typeof file !== 'string' || nodePath.isAbsolute(file) || nodePath.normalize(file).startsWith('..')) {
+      throw new Error(`Invalid file path: ${file}`);
+    }
+
+    const { stdout } = await execFileAsync(
+      this.options.executable,
+      ['--no-pager', 'show', '--end-of-options', `${rev}:${file}`],
+      {
+        cwd: this.path,
+        maxBuffer: this.options.maxBufferForShow
+      }
+    );
 
     return stdout.toString('utf-8');
   }
@@ -239,11 +326,15 @@ export class Repository {
   }
 }
 
-function exec(cmd: string, options: ExecOptions): Promise<{ stdout: string | Buffer; stderr: string | Buffer }> {
-  debug('Executing command %s', cmd);
+function execFileAsync(
+  file: string,
+  args: string[],
+  options: ExecFileOptions = {}
+): Promise<{ stdout: string | Buffer; stderr: string | Buffer }> {
+  debug('Executing %s with args %o', file, args);
 
   return new Promise((resolve, reject) => {
-    childProcess.exec(cmd, options, wrapExecError((err, result) => {
+    childProcess.execFile(file, args, options, wrapExecError((err, result) => {
       if (err) {
         return reject(err);
       }
@@ -253,56 +344,48 @@ function exec(cmd: string, options: ExecOptions): Promise<{ stdout: string | Buf
   });
 }
 
-function wrapExecError(cb: (err: (ExecException & { stdout?: string | Buffer; stderr?: string | Buffer }) | null, result: { stdout: string | Buffer; stderr: string | Buffer }) => void) {
-  return function(err: ExecException | null, stdout: string | Buffer, stderr: string | Buffer) {
+function wrapExecError(cb: (err: (ExecFileException & { stdout?: string | Buffer; stderr?: string | Buffer }) | null, result: { stdout: string | Buffer; stderr: string | Buffer }) => void) {
+  return function(err: ExecFileException | null, stdout: string | Buffer, stderr: string | Buffer) {
     if (err) {
-      const errorWithStreams = err as ExecException & { stdout?: string | Buffer; stderr?: string | Buffer };
-      errorWithStreams.stdout = stdout.toString();
-      errorWithStreams.stderr = stderr.toString();
+      const errorWithStreams = err as ExecFileException & { stdout?: string | Buffer; stderr?: string | Buffer };
+      errorWithStreams.stdout = stdout ? stdout.toString() : '';
+      errorWithStreams.stderr = stderr ? stderr.toString() : '';
     }
 
-    cb(err as (ExecException & { stdout?: string | Buffer; stderr?: string | Buffer }) | null, { stdout, stderr });
+    cb(err as (ExecFileException & { stdout?: string | Buffer; stderr?: string | Buffer }) | null, { stdout, stderr });
   };
 }
 
-function toCLIArgument(arg?: string | null): string {
-  if (arg === undefined || arg === null) {
-    return '';
-  }
+function optionsToArgs(options?: Record<string, unknown>): string[] {
+  if (!options) return [];
 
-  if (process.platform === 'win32') {
-    return `"${arg}"`;
-  }
-
-  return arg;
-}
-
-function stringifyOptions(options?: Record<string, unknown>): string {
-  if (!options) return '';
-
-  const flags: string[] = [];
+  const args: string[] = [];
 
   for (const [key, val] of Object.entries(options)) {
     if (val === undefined || val === null) continue;
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(key)) {
+      throw new Error(`Invalid option key: ${key}`);
+    }
 
     const flagName = key.length === 1 ? `-${key}` : `--${key.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}`;
 
     if (typeof val === 'boolean') {
       if (val) {
-        flags.push(flagName);
+        args.push(flagName);
       } else {
-        flags.push(key.length === 1 ? `-${key}` : `--no-${key.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}`);
+        args.push(key.length === 1 ? `-${key}` : `--no-${key.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}`);
       }
     } else if (Array.isArray(val)) {
       for (const v of val) {
-        flags.push(flagName, String(v));
+        args.push(flagName, String(v));
       }
     } else {
-      flags.push(flagName, String(val));
+      args.push(flagName, String(val));
     }
   }
 
-  return flags.join(' ');
+  return args;
 }
 
 export default Repository;
